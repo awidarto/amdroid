@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/JayonWarehouse/JayonWarehouse.iml" filepath="$PROJECT_DIR$/JayonWarehouse/JayonWarehouse.iml" />
-      <module fileurl="file://$PROJECT_DIR$/JayonWarehouseProject.iml" filepath="$PROJECT_DIR$/JayonWarehouseProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AssetManager/AssetManager.iml" filepath="$PROJECT_DIR$/AssetManager/AssetManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AssetManagerProject2.iml" filepath="$PROJECT_DIR$/AssetManagerProject2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AssetManager/libs/PolyPicker/PolyPicker.iml" filepath="$PROJECT_DIR$/AssetManager/libs/PolyPicker/PolyPicker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AssetManager/libs/libs.iml" filepath="$PROJECT_DIR$/AssetManager/libs/libs.iml" />
     </modules>
   </component>
 </project>

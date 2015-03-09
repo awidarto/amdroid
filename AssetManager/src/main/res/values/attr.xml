@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LabeledTextView">
+        <attr name="labelText" format="string" />
+        <attr name="labelTextStyle" format="string" />
+        <attr name="labelColor" format="color" />
+        <attr name="bodyColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="RelativeHeightImageView">
+        <attr name="height_multiplier" format="float" />
+    </declare-styleable>
+</resources>

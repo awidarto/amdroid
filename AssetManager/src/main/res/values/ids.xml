@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="menu_flash" />
+    <item type="id" name="menu_auto_focus" />
+    <item type="id" name="menu_formats" />
+    <item type="id" name="action_scan" />
+    <item type="id" name="action_refresh" />
+    <item type="id" name="action_logout" />
+    <item type="id" name="action_scan_location" />
+    <item type="id" name="action_scan_rack" />
+    <item type="id" name="action_scan_asset" />
+    <item type="id" name="action_refresh_location" />
+    <item type="id" name="action_refresh_rack" />
+    <item type="id" name="action_refresh_asset" />
+    <item type="id" name="action_location" />
+    <item type="id" name="action_rack" />
+    <item type="id" name="action_asset" />
+    <item type="id" name="action_edit_asset" />
+    <item type="id" name="action_delete_asset" />
+
+</resources>

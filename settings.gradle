@@ -1,1 +1,2 @@
-include ':JayonWarehouse'
+include ':AssetManager'
+include ':AssetManager:libs:PolyPicker'
