@@ -27,6 +27,7 @@ public class Location extends SugarRecord<Location>{
     private String pictureBrc1;
     private String pictureBrc2;
     private String pictureBrc3;
+    private Integer deleted;
 
     public Location(){
 

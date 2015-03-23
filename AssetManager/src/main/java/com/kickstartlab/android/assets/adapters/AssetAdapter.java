@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.kickstartlab.android.assets.R;
 import com.kickstartlab.android.assets.rest.models.Asset;
 import com.kickstartlab.android.assets.ui.SquareImageView;
@@ -24,10 +26,12 @@ public class AssetAdapter extends BaseAdapter {
     LayoutInflater layoutInflater ;
     private List<Asset> list;
     private Context mContext;
+    ColorGenerator generator;
 
     public AssetAdapter(Context context) {
         mContext = context;
         layoutInflater = LayoutInflater.from(context);
+        generator = ColorGenerator.MATERIAL;
     }
 
     public void setData(List<Asset> list) {
@@ -68,13 +72,23 @@ public class AssetAdapter extends BaseAdapter {
         holder.head.setText(list.get(i).getSKU());
         holder.subhead.setText(list.get(i).getItemDescription() );
 
+        String iconText = list.get(i).getSKU().substring(0,1);
+        TextDrawable icon = TextDrawable.builder()
+                .beginConfig()
+                .width(50)  // width in px
+                .height(50) // height in px
+                .endConfig()
+                .buildRound(iconText, generator.getColor(iconText));
+
         if("".equalsIgnoreCase(list.get(i).getPictureMediumUrl()) == false){
             Picasso.with(mContext)
                     .load(list.get(i).getPictureMediumUrl())
                     .fit()
                     .centerCrop()
-                    .placeholder(R.drawable.default_cover_small)
+                    .placeholder(icon)
                     .into(holder.avatar);
+        }else{
+            holder.avatar.setImageDrawable(icon);
         }
 
         return convertView;

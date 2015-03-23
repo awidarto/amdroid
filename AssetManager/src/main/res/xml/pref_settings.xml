@@ -3,21 +3,22 @@
     >
 
     <com.jenzz.materialpreference.PreferenceCategory android:title="@string/pref_header_general">
-        <com.jenzz.materialpreference.Preference android:title="@string/pref_title_display_name"/>
         <com.jenzz.materialpreference.Preference
-            android:title="@string/pref_header_general"
-            android:summary="@string/pref_title_display_name"
+            android:title="@string/pref_header_sync_param"
+            android:summary="@string/pref_title_sync_param"
+            android:key="sync_parameter"
             />
         <com.jenzz.materialpreference.Preference
-            android:title="@string/pref_title_system_sync_settings"
-            android:summary="@string/pref_title_sync_frequency"
-            android:icon="@drawable/ic_cloud_download_white_18dp"
+            android:title="@string/pref_header_sync_images"
+            android:summary="@string/pref_title_sync_images"
+            android:key="sync_images"
             />
-        <com.jenzz.materialpreference.CheckBoxPreference
-            android:title="@string/pref_header_notifications"
-            android:summaryOn="@string/pref_title_new_message_notifications"
-            android:summaryOff="@string/pref_ringtone_silent"
+        <com.jenzz.materialpreference.Preference
+            android:title="@string/pref_header_upsync_images"
+            android:summary="@string/pref_title_upsync_images"
+            android:key="upsync_images"
             />
     </com.jenzz.materialpreference.PreferenceCategory>
+
 
 </PreferenceScreen>

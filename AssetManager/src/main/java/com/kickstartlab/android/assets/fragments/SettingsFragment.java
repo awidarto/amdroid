@@ -8,7 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.machinarius.preferencefragment.PreferenceFragment;
+import com.jenzz.materialpreference.Preference;
 import com.kickstartlab.android.assets.R;
+import com.kickstartlab.android.assets.events.DeviceTypeEvent;
+import com.kickstartlab.android.assets.events.ImageEvent;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -57,6 +62,34 @@ public class SettingsFragment extends PreferenceFragment {
         }
 
         addPreferencesFromResource(R.xml.pref_settings);
+        Preference sync = (Preference) findPreference("sync_parameter");
+        Preference sync_images = (Preference) findPreference("sync_images");
+        Preference upsync_images = (Preference) findPreference("upsync_images");
+
+
+        sync.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new DeviceTypeEvent("sync"));
+                return false;
+            }
+        });
+
+        sync_images.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new ImageEvent("sync","all", "all"));
+                return false;
+            }
+        });
+
+        upsync_images.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new ImageEvent("upsync","all", "all"));
+                return false;
+            }
+        });
     }
 
     /*

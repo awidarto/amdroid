@@ -6,7 +6,7 @@ package com.kickstartlab.android.assets.utils;
 public class RandomStringGenerator {
 
     public static enum Mode {
-        ALPHA, ALPHANUMERIC, NUMERIC
+        ALPHA, ALPHANUMERIC, NUMERIC, HEX
     }
 
     public static String generateRandomString(int length, Mode mode){
@@ -26,6 +26,9 @@ public class RandomStringGenerator {
 
             case NUMERIC:
                 characters = "1234567890";
+                break;
+            case HEX:
+                characters = "1234567890ABCDEF";
                 break;
         }
 

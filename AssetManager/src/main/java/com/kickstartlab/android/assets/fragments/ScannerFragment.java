@@ -226,7 +226,7 @@ public class ScannerFragment extends Fragment implements
                         .append(rawResult.getText())
                         .toString();
 
-                showAlienDialog(message );
+                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_location_title),message );
             }
 
         }else if("rack".equalsIgnoreCase(mParam2)){
@@ -241,7 +241,7 @@ public class ScannerFragment extends Fragment implements
                         .append(rawResult.getText())
                         .toString();
 
-                showAlienDialog(message );
+                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_rack_title),message );
             }
 
         }else if("asset".equalsIgnoreCase(mParam2)){
@@ -250,14 +250,42 @@ public class ScannerFragment extends Fragment implements
 
             if (select.count() > 0) {
                 Asset asset = (Asset) select.first();
-                EventBus.getDefault().post(new AssetEvent("select", asset));
+
+                Log.i("CURRENT RACK ID", mParam1);
+                Log.i("ASSET RACK ID", asset.getRackId());
+
+                if( !mParam1.equalsIgnoreCase(asset.getRackId()) ){
+                    String message = new StringBuilder(getResources().getString(R.string.misplaced_rack))
+                            .append(System.lineSeparator())
+                            .append(getResources().getString(R.string.ask_move))
+                            .toString();
+                    showDisplacedDialog( message, asset, mParam1);
+                }else{
+                    EventBus.getDefault().post(new AssetEvent("select", asset));
+                }
+
             }else{
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
                         .toString();
 
-                showAlienDialog(message );
+                showAlienDialog( getResources().getString(R.string.dialog_alien_asset_title) ,message );
+            }
+
+        }else if("getcode".equalsIgnoreCase(mParam2)){
+            Select select = Select.from(Asset.class).where(Condition.prop("SKU").eq(scresult))
+                    .limit("1");
+
+            if (select.count() > 0) {
+                Asset asset = (Asset) select.first();
+                String message = new StringBuilder("Scan Result : ")
+                        .append(System.lineSeparator())
+                        .append(rawResult.getText())
+                        .toString();
+                showDupeDialog(message);
+            }else{
+                EventBus.getDefault().post( new ScannerEvent("sendCode", rawResult ));
             }
 
         }
@@ -281,9 +309,9 @@ public class ScannerFragment extends Fragment implements
         */
     }
 
-    public void showAlienDialog(String message) {
+    public void showDupeDialog(String message) {
         new MaterialDialog.Builder(getActivity())
-                .title(R.string.dialog_alien_asset_title)
+                .title(R.string.dialog_dupe_asset_title)
                 .content(message)
                 .positiveText(R.string.ok_button)
                 .positiveColor(R.color.green)
@@ -293,6 +321,112 @@ public class ScannerFragment extends Fragment implements
                               @Override
                               public void onPositive(MaterialDialog dialog) {
                                   //super.onPositive(dialog);
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                              }
+
+                              @Override
+                              public void onNegative(MaterialDialog dialog) {
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                                  super.onNegative(dialog);
+                              }
+
+                              @Override
+                              public void onNeutral(MaterialDialog dialog) {
+                                  super.onNeutral(dialog);
+                              }
+                          }
+
+                )
+                .show();
+
+        //DialogFragment fragment = AlienDialogFragment.newInstance("Tidak Dikenal", message, this);
+        //fragment.show(getActivity().getSupportFragmentManager(), "alien_results");
+    }
+
+    public void showAlienDialog(String title, String message) {
+        new MaterialDialog.Builder(getActivity())
+                .title(title)
+                .content(message)
+                .neutralText(R.string.action_create_asset)
+                .positiveText(R.string.ok_button)
+                .positiveColor(R.color.green)
+                .negativeText(R.string.cancel_button)
+                .negativeColor(R.color.red)
+                .callback(new MaterialDialog.ButtonCallback() {
+                              @Override
+                              public void onPositive(MaterialDialog dialog) {
+                                  //super.onPositive(dialog);
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                              }
+
+                              @Override
+                              public void onNegative(MaterialDialog dialog) {
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                                  super.onNegative(dialog);
+                              }
+
+                              @Override
+                              public void onNeutral(MaterialDialog dialog) {
+                                  super.onNeutral(dialog);
+                              }
+                          }
+
+                )
+                .show();
+
+        //DialogFragment fragment = AlienDialogFragment.newInstance("Tidak Dikenal", message, this);
+        //fragment.show(getActivity().getSupportFragmentManager(), "alien_results");
+    }
+
+    public void showUnregisteredDialog(String title, String message) {
+        new MaterialDialog.Builder(getActivity())
+                .title(title)
+                .content(message)
+                .positiveText(R.string.ok_button)
+                .positiveColor(R.color.green)
+                .negativeText(R.string.cancel_button)
+                .negativeColor(R.color.red)
+                .callback(new MaterialDialog.ButtonCallback() {
+                              @Override
+                              public void onPositive(MaterialDialog dialog) {
+                                  //super.onPositive(dialog);
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                              }
+
+                              @Override
+                              public void onNegative(MaterialDialog dialog) {
+                                  EventBus.getDefault().post(new ScannerEvent("resume"));
+                                  super.onNegative(dialog);
+                              }
+
+                              @Override
+                              public void onNeutral(MaterialDialog dialog) {
+                                  super.onNeutral(dialog);
+                              }
+                          }
+
+                )
+                .show();
+
+        //DialogFragment fragment = AlienDialogFragment.newInstance("Tidak Dikenal", message, this);
+        //fragment.show(getActivity().getSupportFragmentManager(), "alien_results");
+    }
+
+    public void showDisplacedDialog(String message, final Asset asset ,final String rackId) {
+        new MaterialDialog.Builder(getActivity())
+                .title(R.string.dialog_displaced_asset_title)
+                .content(message)
+                .positiveText(R.string.action_move_asset)
+                .positiveColor(R.color.green)
+                .negativeText(R.string.ignore_button)
+                .negativeColor(R.color.red)
+                .callback(new MaterialDialog.ButtonCallback() {
+                              @Override
+                              public void onPositive(MaterialDialog dialog) {
+                                  //super.onPositive(dialog);
+                                    Log.i("CURRENT RACK", rackId);
+                                    Log.i("ASSET RACK", asset.getRackId());
+                                  EventBus.getDefault().post(new AssetEvent("moveRack", asset, rackId ));
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                               }
 

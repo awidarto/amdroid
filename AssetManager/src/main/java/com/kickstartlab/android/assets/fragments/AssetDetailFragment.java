@@ -4,8 +4,11 @@ package com.kickstartlab.android.assets.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,15 +23,22 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.kickstartlab.android.assets.R;
 import com.kickstartlab.android.assets.activities.EditAssetActivity;
 import com.kickstartlab.android.assets.events.AssetEvent;
+import com.kickstartlab.android.assets.rest.interfaces.AmApiInterface;
 import com.kickstartlab.android.assets.rest.models.Asset;
+import com.kickstartlab.android.assets.rest.models.AssetImages;
 import com.kickstartlab.android.assets.ui.LabeledTextView;
 import com.kickstartlab.android.assets.ui.SquareImageView;
+import com.kickstartlab.android.assets.utils.RandomStringGenerator;
 import com.orm.query.Condition;
 import com.orm.query.Select;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.util.List;
+
 import de.greenrobot.event.EventBus;
 import nl.changer.polypicker.ImagePickerActivity;
+import retrofit.RestAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,9 +57,13 @@ public class AssetDetailFragment extends Fragment {
 
     private int INTENT_REQUEST_GET_IMAGES = 1667;
 
+    Asset asset;
+
     FloatingActionButton btEdit, btAddImage;
 
     LabeledTextView sku, desc,ip,os,pic,pic_email,pic_phone,contract,asset_type,owner,type,host;
+
+    LinearLayout image_container;
 
     /**
      * Use this factory method to create a new instance of
@@ -114,12 +128,14 @@ public class AssetDetailFragment extends Fragment {
 
         LinearLayout detail_container = (LinearLayout) mview.findViewById(R.id.detail_container);
 
+        image_container = (LinearLayout) mview.findViewById(R.id.image_container);
+
         Select select = Select.from(Asset.class).where(Condition.prop("ext_id").eq(mParam1))
                 .limit("1");
 
         Log.i("ASSET COUNT", String.valueOf(select.count()));
         if (select.count() > 0) {
-            Asset asset = (Asset) select.first();
+            asset = (Asset) select.first();
 
             Log.i("ASSET SKU", asset.getSKU() ) ;
 
@@ -187,6 +203,7 @@ public class AssetDetailFragment extends Fragment {
             //detail_container.addView(type);
             detail_container.addView(desc);
 
+            /*
             if("".equalsIgnoreCase(asset.getPictureMediumUrl()) == false){
                 SquareImageView defpic = new SquareImageView(getActivity());
                 detail_container.addView(defpic);
@@ -197,12 +214,20 @@ public class AssetDetailFragment extends Fragment {
                         .placeholder(R.drawable.ic_cloud_download_grey600_24dp)
                         .into(defpic);
             }
+            */
 
         }
 
-
+        refreshImage();
 
         return mview;
+    }
+
+
+    @Override
+    public void onResume() {
+        refreshImage();
+        super.onResume();
     }
 
     public void onEvent(AssetEvent ae){
@@ -223,6 +248,13 @@ public class AssetDetailFragment extends Fragment {
             host.setBody(a.getHostName());
 
         }
+
+        if(ae.getAction() == "editAsset"){
+            Intent i = new Intent(getActivity(), EditAssetActivity.class);
+            i.putExtra("ext_id", mParam1);
+            startActivity(i);
+        }
+
     }
 
     public void onCreateOptionsMenu (Menu menu, MenuInflater inflater) {
@@ -237,9 +269,20 @@ public class AssetDetailFragment extends Fragment {
         menuItem = menu.add(Menu.NONE, R.id.action_edit_asset, 0, R.string.action_edit_asset).setIcon(R.drawable.ic_mode_edit_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        menuItem = menu.add(Menu.NONE, R.id.action_refresh_asset, 0, R.string.action_refresh).setIcon(R.drawable.ic_cloud_download_white_24dp);
+        menuItem = menu.add(Menu.NONE, R.id.action_refresh_asset, 0, R.string.action_refresh).setIcon(R.drawable.ic_sync_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+
+        if (id == R.id.action_refresh_asset) {
+            EventBus.getDefault().post(new AssetEvent("syncAsset",asset));
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -248,7 +291,88 @@ public class AssetDetailFragment extends Fragment {
 
         if( resultCode == Activity.RESULT_OK ){
             if(requestCode == INTENT_REQUEST_GET_IMAGES){
+                Parcelable[] parcelableUris = data.getParcelableArrayExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
 
+                if(parcelableUris == null) {
+                    return;
+                }
+
+                Uri[] uris = new Uri[parcelableUris.length];
+                System.arraycopy(parcelableUris, 0, uris, 0, parcelableUris.length);
+
+                if(uris != null) {
+                    for(Uri uri : uris){
+                        Select select = Select.from(AssetImages.class)
+                                .where(Condition.prop("uri").eq(uri.toString()))
+                                .limit("1");
+
+                        if(select.count() > 0){
+
+                        }else{
+                            AssetImages aim = new AssetImages();
+
+                            String file_id = RandomStringGenerator.generateRandomString(15, RandomStringGenerator.Mode.HEX).toLowerCase();
+                            String upload_id = RandomStringGenerator.generateRandomString(24, RandomStringGenerator.Mode.HEX).toLowerCase();
+
+                            aim.setNs("assetpic");
+                            aim.setParentClass("asset");
+                            aim.setParentId(mParam1);
+                            aim.setFileId(file_id);
+                            aim.setExtId(upload_id);
+                            aim.setUri( uri.toString());
+                            aim.setIsLocal(1);
+                            aim.setUploaded(0);
+                            aim.save();
+
+                        }
+
+                    }
+
+                    //EventBus.getDefault().post(new AssetEvent("refreshImage"));
+                    refreshImage();
+                }
+            }
+        }
+    }
+
+    public void refreshImage(){
+        image_container.removeAllViews();
+
+        Log.i("IMAGE","REFRESH");
+
+        Select select = Select.from(AssetImages.class).where(Condition.prop("parent_id").eq(mParam1));
+
+        Log.i( "IMG", String.valueOf(select.count()) );
+
+        if(select.count() > 0){
+
+            List<AssetImages> aim = select.list();
+            for(int im = 0; im < select.count();im++ ){
+                AssetImages am = aim.get(im);
+
+                if( ( "".equalsIgnoreCase(am.getExtUrl() ) || am.getExtUrl() == null ) == false){
+
+                    Log.i("IMAGE ITEM EXT", am.getExtUrl());
+                    SquareImageView defpic = new SquareImageView(getActivity());
+                    image_container.addView(defpic);
+                    Picasso.with(getActivity())
+                            .load(am.getExtUrl())
+                            .fit()
+                            .centerCrop()
+                            .into(defpic);
+                }else{
+                    if( ("".equalsIgnoreCase( am.getUri() ) || am.getUri() == null ) == false){
+
+                        Log.i("IMAGE ITEM INT", am.getUri());
+                        SquareImageView defpic = new SquareImageView(getActivity());
+                        image_container.addView(defpic);
+                        Picasso.with(getActivity())
+                                .load("file://" + am.getUri())
+                                .fit()
+                                .centerCrop()
+                                .into(defpic);
+                    }
+                }
             }
         }
     }

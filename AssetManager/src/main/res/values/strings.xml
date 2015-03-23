@@ -59,5 +59,23 @@
     <string name="title_activity_picker">PickerActivity</string>
     <string name="settings_title">Settings</string>
     <string name="title_activity_add_asset">Add Asset</string>
+    <string name="pref_header_sync_param">Sync Parameters</string>
+    <string name="pref_title_sync_param">Sync Device Types list and other parameters</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
+    <string name="dialog_dupe_asset_title">Duplicate Found</string>
+    <string name="action_create_asset">create</string>
+    <string name="dialog_displaced_asset_title">Misplaced Asset</string>
+    <string name="action_move_asset">Move</string>
+    <string name="no_button">No</string>
+    <string name="yes_button">Yes</string>
+    <string name="ignore_button">Ignore</string>
+    <string name="ask_move">Move asset ?</string>
+    <string name="misplaced_rack">Asset placed in incorrect Rack.</string>
+    <string name="pref_header_sync_images">Download Images</string>
+    <string name="pref_title_sync_images">Download image attachment informations</string>
+    <string name="pref_header_upsync_images">Upload Images</string>
+    <string name="pref_title_upsync_images">Upload device captured images</string>
+    <string name="dialog_unregistered_location_title">Unregistered Location</string>
+    <string name="dialog_unregistered_rack_title">Unregistered Rack</string>
 
 </resources>

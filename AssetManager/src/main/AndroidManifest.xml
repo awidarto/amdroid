@@ -23,7 +23,7 @@
             android:value="assets_db.db" />
         <meta-data
             android:name="VERSION"
-            android:value="6" />
+            android:value="17" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />
@@ -69,8 +69,16 @@
                 android:value="com.kickstartlab.android.assets.activities.MainActivity" />
         </activity>
         <activity
-            android:theme="@android:style/Theme.Holo.Light"
-            android:name="nl.changer.polypicker.ImagePickerActivity" />
+            android:name="nl.changer.polypicker.ImagePickerActivity"
+            android:theme="@android:style/Theme.Holo.Light" />
+        <activity
+            android:name=".activities.ScannerActivity"
+            android:label="@string/title_activity_scanner"
+            android:parentActivityName=".activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kickstartlab.android.assets.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

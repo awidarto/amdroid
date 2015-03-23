@@ -44,6 +44,7 @@ public class Asset extends SugarRecord<Asset> {
 
     private Integer localEdit;
     private Integer uploaded;
+    private Integer deleted;
 
     public Asset(){
 

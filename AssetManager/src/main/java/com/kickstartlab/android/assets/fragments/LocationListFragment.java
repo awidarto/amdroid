@@ -167,7 +167,7 @@ public class LocationListFragment extends Fragment implements AbsListView.OnItem
         menuItem = menu.add(Menu.NONE, R.id.action_scan_location, 0, R.string.action_scan).setIcon(R.drawable.ic_action_qr);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        menuItem = menu.add(Menu.NONE, R.id.action_refresh_location, 0, R.string.action_refresh).setIcon(R.drawable.ic_cloud_download_white_24dp);
+        menuItem = menu.add(Menu.NONE, R.id.action_refresh_location, 0, R.string.action_refresh).setIcon(R.drawable.ic_sync_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
 

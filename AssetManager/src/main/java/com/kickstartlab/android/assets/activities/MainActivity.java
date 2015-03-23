@@ -1,16 +1,14 @@
 package com.kickstartlab.android.assets.activities;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.MenuCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -23,7 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.LocationSource;
 import com.kickstartlab.android.assets.events.AssetEvent;
+import com.kickstartlab.android.assets.events.DeviceTypeEvent;
+import com.kickstartlab.android.assets.events.ImageEvent;
 import com.kickstartlab.android.assets.events.LocationEvent;
 import com.kickstartlab.android.assets.events.MerchantEvent;
 import com.kickstartlab.android.assets.events.OrderEvent;
@@ -34,25 +38,17 @@ import com.kickstartlab.android.assets.fragments.OrderListFragment;
 import com.kickstartlab.android.assets.fragments.ScannerFragment;
 import com.kickstartlab.android.assets.fragments.SettingsFragment;
 import com.kickstartlab.android.assets.rest.interfaces.JwhApiInterface;
+import com.kickstartlab.android.assets.rest.models.AssetImages;
+import com.kickstartlab.android.assets.rest.models.DeviceType;
 import com.kickstartlab.android.assets.rest.models.Merchant;
 import com.kickstartlab.android.assets.rest.models.OrderItem;
 import com.kickstartlab.android.assets.R;
-import com.kickstartlab.android.assets.events.MerchantEvent;
-import com.kickstartlab.android.assets.events.OrderEvent;
-import com.kickstartlab.android.assets.events.ScannerEvent;
 import com.kickstartlab.android.assets.fragments.AssetListFragment;
 import com.kickstartlab.android.assets.fragments.LocationListFragment;
-import com.kickstartlab.android.assets.fragments.MerchantListFragment;
-import com.kickstartlab.android.assets.fragments.MessageDialogFragment;
-import com.kickstartlab.android.assets.fragments.OrderListFragment;
 import com.kickstartlab.android.assets.fragments.RackListFragment;
-import com.kickstartlab.android.assets.fragments.ScannerFragment;
 import com.kickstartlab.android.assets.rest.interfaces.AmApiInterface;
-import com.kickstartlab.android.assets.rest.interfaces.JwhApiInterface;
 import com.kickstartlab.android.assets.rest.models.Asset;
 import com.kickstartlab.android.assets.rest.models.Location;
-import com.kickstartlab.android.assets.rest.models.Merchant;
-import com.kickstartlab.android.assets.rest.models.OrderItem;
 import com.kickstartlab.android.assets.rest.models.Rack;
 import com.kickstartlab.android.assets.rest.models.ResultObject;
 import com.orm.query.Condition;
@@ -72,12 +68,11 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+import retrofit.mime.TypedFile;
 
 
 public class MainActivity extends ActionBarActivity implements
-        FragmentManager.OnBackStackChangedListener
-        /*,
-        MessageDialogFragment.MessageDialogListener*/ {
+        FragmentManager.OnBackStackChangedListener {
 
     private static final String SCREEN_LOCATION = "location";
     private static final String SCREEN_SCAN = "scan";
@@ -137,6 +132,7 @@ public class MainActivity extends ActionBarActivity implements
 
     }
 
+
     @Override
     public void onBackStackChanged() {
         String title;
@@ -194,7 +190,7 @@ public class MainActivity extends ActionBarActivity implements
 
         if(id == R.id.action_scan_asset){
             current_mode = "asset";
-            doScan(current_asset, current_mode);
+            doScan(current_rack, current_mode);
         }
 
         if(id == R.id.action_refresh){
@@ -224,6 +220,9 @@ public class MainActivity extends ActionBarActivity implements
             //refreshAsset();
         }
 
+        if(id == R.id.action_edit_asset){
+            EventBus.getDefault().post(new AssetEvent("editAsset"));
+        }
 
         if(id == R.id.action_logout){
             doSignOut();
@@ -247,6 +246,7 @@ public class MainActivity extends ActionBarActivity implements
     public void onEvent(ScannerEvent se){
         if(se.getCommand() == "scan"){
             String mode = se.getMode();
+
             if(mode.equalsIgnoreCase("rack")){
                 doScan(current_rack, mode);
             }
@@ -256,7 +256,7 @@ public class MainActivity extends ActionBarActivity implements
             }
 
             if(mode.equalsIgnoreCase("asset")){
-                doScan(current_asset, mode);
+                doScan(current_rack, mode);
             }
         }
     }
@@ -275,6 +275,10 @@ public class MainActivity extends ActionBarActivity implements
 
             current_location = le.getLocation().getExtId();
         }
+
+        if(le.getAction() == "refreshImage"){
+            refreshImages(le.getLocation().getExtId(),"location");
+        }
     }
 
     public void onEvent(RackEvent re){
@@ -292,7 +296,10 @@ public class MainActivity extends ActionBarActivity implements
             current_rack = re.getRack().getExtId();
         }else if(re.getAction() == "refreshById"){
             refreshRack(re.getLocationId());
+        }else if(re.getAction() == "refreshImage"){
+            refreshImages(re.getRack().getExtId(),"rack");
         }
+
     }
 
     public void onEvent(AssetEvent ae){
@@ -310,10 +317,32 @@ public class MainActivity extends ActionBarActivity implements
             current_rack = ae.getAsset().getRackId();
         }else if(ae.getAction() == "refreshById"){
             refreshAsset(ae.getRackId());
+        }else if(ae.getAction() == "syncAsset"){
+            Asset asset = ae.getAsset();
+            syncAsset( asset );
+        }else if(ae.getAction() == "upsyncAsset"){
+            Asset asset = ae.getAsset();
+            upsyncAsset(asset);
+        }else if(ae.getAction() == "refreshImage"){
+            refreshImages(ae.getAsset().getExtId(),"asset");
+        }else if(ae.getAction() == "moveRack"){
+            Asset asset = ae.getAsset();
+            String rackId = ae.getRackId();
+            asset.setRackId(rackId);
+            asset.setLocalEdit(1);
+            asset.save();
         }
+
     }
 
-
+    public void onEvent(ImageEvent im){
+        if( im.getAction() == "sync" ){
+            refreshImages( im.getEntityId() , im.getEntityType());
+        }
+        if( im.getAction() == "upsync" ){
+            uploadImages();
+        }
+    }
 
     public void onEvent(MerchantEvent me){
         if(me.getAction() == "select"){
@@ -328,6 +357,12 @@ public class MainActivity extends ActionBarActivity implements
             Toast.makeText(this, me.getMerchant().getMerchantname(),Toast.LENGTH_SHORT ).show();
 
             //current_merchant = me.getMerchant().getExtId();
+        }
+    }
+
+    public void onEvent(DeviceTypeEvent dt){
+        if("sync".equalsIgnoreCase(dt.getAction())){
+            refreshAssetType();
         }
     }
 
@@ -755,11 +790,49 @@ public class MainActivity extends ActionBarActivity implements
                             aso.save();
                         }
 
+                        if( asi.getPictureMediumUrl() == null || asi.getPictureMediumUrl() == "" || asi.getPictureMediumUrl() == "null" ){
+
+                        }else{
+
+                            Select seldef = Select.from(AssetImages.class)
+                                    .where(Condition.prop("is_default").eq(1),
+                                            Condition.prop("ext_id").eq(asi.getExtId()) );
+
+                            if(seldef.count() > 0 ){
+                                AssetImages defimg = (AssetImages) seldef.first();
+
+                                Log.i("DEF IMAGE", defimg.getExtId() + " " + String.valueOf(defimg.getIsDefault()) + " " + asi.getPictureMediumUrl() );
+
+                                defimg.setExtUrl(asi.getPictureMediumUrl());
+                                defimg.save();
+                            }else{
+                                AssetImages am = new AssetImages();
+                                am.setExtId(asi.getExtId());
+                                am.setExtUrl(asi.getPictureMediumUrl());
+                                am.setUploaded(1);
+                                am.setIsLocal(0);
+                                am.setIsDefault(1);
+                                am.save();
+                            }
+
+                        }
+
+
+
                     } else {
                         Asset newasset = assets.get(i);
                         newasset.setLocalEdit(0);
                         newasset.setUploaded(1);
                         newasset.save();
+
+                        if( "".equalsIgnoreCase( newasset.getPictureMediumUrl() ) == false ){
+                            AssetImages am = new AssetImages();
+                            am.setExtId(newasset.getExtId());
+                            am.setExtUrl(newasset.getPictureMediumUrl());
+                            am.setUploaded(1);
+                            am.setIsLocal(0);
+                            am.save();
+                        }
                     }
 
                 }
@@ -776,6 +849,222 @@ public class MainActivity extends ActionBarActivity implements
                 EventBus.getDefault().post(new AssetEvent("refresh"));
             }
         });
+    }
+
+    public void refreshAssetType(){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(getResources().getString(R.string.api_base_url))
+                .build();
+        AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
+
+        setProgressVisibility(true);
+
+        amApiInterface.getAssetType(new Callback<List<DeviceType>>() {
+            @Override
+            public void success(List<DeviceType> deviceTypes, Response response) {
+                DeviceType.deleteAll(DeviceType.class);
+
+                for (int i = 0; i < deviceTypes.size(); i++) {
+                    DeviceType deviceType = deviceTypes.get(i);
+                    deviceType.save();
+                }
+
+                setProgressVisibility(false);
+                EventBus.getDefault().post(new DeviceTypeEvent("refresh"));
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                setProgressVisibility(false);
+            }
+        });
+    }
+
+    public void refreshImages(String entityId, String entityType ){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(getResources().getString(R.string.api_base_url))
+                .build();
+        AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
+
+        setProgressVisibility(true);
+
+        amApiInterface.getImage(entityId, entityType, new Callback<List<AssetImages>>() {
+            @Override
+            public void success(List<AssetImages> assetImages, Response response) {
+
+                for(int i=0;i< assetImages.size();i++ ){
+                    Select select = Select.from(AssetImages.class)
+                            .where(Condition.prop("parent_id").eq(assetImages.get(i).getParentId()),
+                                    Condition.prop("ext)id").eq(assetImages.get(i).getExtId()) )
+                            .limit("1");
+
+                    if (select.count() > 0) {
+                        AssetImages aso = (AssetImages) select.first();
+                        AssetImages asi = assetImages.get(i);
+
+                        aso.setName(asi.getName());
+                        aso.setSize(asi.getSize());
+                        aso.setNs(asi.getNs());
+                        aso.setType(asi.getType());
+                        aso.setParentClass(asi.getParentClass());
+                        aso.setFileId(asi.getFileId());
+                        aso.setUrl(asi.getUrl());
+                        aso.setExtUrl(asi.getUrl());
+                        aso.setPictureFullUrl(asi.getPictureFullUrl());
+                        aso.setPictureLargeUrl(asi.getPictureLargeUrl());
+                        aso.setPictureMediumUrl(asi.getPictureMediumUrl());
+                        aso.setPictureThumbnailUrl(asi.getPictureThumbnailUrl());
+
+                        aso.setTemp_dir(asi.getTemp_dir());
+                        aso.setIsDefault(asi.getIsDefault());
+                        aso.setIsImage(asi.getIsImage());
+                        aso.setIsAudio(asi.getIsAudio());
+                        aso.setIsVideo(asi.getIsVideo());
+                        aso.setIsDoc(asi.getIsDoc());
+                        aso.setIsPdf(asi.getIsPdf());
+
+                        aso.setIsLocal(0);
+                        aso.setUploaded(1);
+                        aso.setDeleted(asi.getDeleted());
+                        aso.save();
+
+                        Asset as =  (Asset) Select.from(Asset.class).where(Condition.prop("extId").eq(asi.getParentId())).first();
+
+                        if(as != null){
+                            as.setPictureFullUrl(asi.getPictureFullUrl());
+                            as.setPictureLargeUrl(asi.getPictureLargeUrl());
+                            as.setPictureMediumUrl(asi.getPictureMediumUrl());
+                            as.setPictureThumbnailUrl(asi.getPictureThumbnailUrl());
+                            as.save();
+                        }
+
+                    }else{
+                        assetImages.get(i).save();
+                        AssetImages asi = assetImages.get(i);
+
+                        Asset as =  (Asset) Select.from(Asset.class).where(Condition.prop("extId").eq(asi.getParentId())).first();
+
+                        if(as != null){
+                            as.setPictureFullUrl(asi.getPictureFullUrl());
+                            as.setPictureLargeUrl(asi.getPictureLargeUrl());
+                            as.setPictureMediumUrl(asi.getPictureMediumUrl());
+                            as.setPictureThumbnailUrl(asi.getPictureThumbnailUrl());
+                            as.save();
+                        }
+                    }
+
+                }
+                setProgressVisibility(false);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+                setProgressVisibility(false);
+            }
+        });
+
+    }
+
+    public void uploadImages(){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setLogLevel(RestAdapter.LogLevel.HEADERS)
+                .setEndpoint(getResources().getString(R.string.api_base_url))
+                .build();
+
+        AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
+
+        setProgressVisibility(true);
+
+        List<AssetImages> images = Select.from(AssetImages.class).where(Condition.prop("uploaded").eq(0)).list();
+
+        Log.i("IMAGE COUNT", String.valueOf(images.size()) );
+
+        for(int i = 0; i < images.size();i++){
+            AssetImages aim = images.get(i);
+
+            Uri furi = Uri.parse(aim.getUri());
+
+            Log.i("UPLOADED IMAGE URI", aim.getUri());
+
+            TypedFile imagefile = new TypedFile("image/jpg", new File( aim.getUri() ) );
+
+            Log.i("UPLOADED IMAGE STRING", imagefile.toString());
+
+            amApiInterface.uploadImage(aim.getNs(),
+                    aim.getParentId(),
+                    aim.getParentClass(),
+                    aim.getFileId(),
+                    aim.getExtId(),
+                    imagefile, new Callback<ResultObject>() {
+                @Override
+                public void success(ResultObject resultObject, Response response) {
+                    Log.i("MESSAGE", resultObject.getMessage());
+                    setProgressVisibility(false);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.i("UPLOAD ERROR", error.toString());
+                    setProgressVisibility(false);
+                }
+            });
+
+        }
+
+    }
+
+    public void syncAsset(Asset asset){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(getResources().getString(R.string.api_base_url))
+                .build();
+
+        AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
+
+        setProgressVisibility(true);
+
+        amApiInterface.sendAsset(asset, new Callback<ResultObject>() {
+            @Override
+            public void success(ResultObject resultObject, Response response) {
+                Log.i("SYNC RESULT", resultObject.getStatus());
+                setProgressVisibility(false);
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.i("SYNC ERR", error.toString() );
+                setProgressVisibility(false);
+
+            }
+        });
+
+    }
+
+    public void upsyncAsset(Asset asset){
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(getResources().getString(R.string.api_base_url))
+                .build();
+
+        AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
+
+        setProgressVisibility(true);
+
+        amApiInterface.updateAsset( asset.getExtId() ,asset, new Callback<ResultObject>() {
+            @Override
+            public void success(ResultObject resultObject, Response response) {
+                Log.i("UPSYNC RESULT", resultObject.getStatus());
+                setProgressVisibility(false);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.i("UPSYNC ERR", error.toString() );
+                setProgressVisibility(false);
+            }
+        });
+
     }
 
     public void updateStatus(String deliveryId){
@@ -853,7 +1142,9 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
+
     public void doScan(String id, String mode){
+
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, ScannerFragment.newInstance(id, mode), "scan_fragment")
                 .addToBackStack("scan_fragment")
@@ -879,28 +1170,4 @@ public class MainActivity extends ActionBarActivity implements
         showLogin();
     }
 
-
-    public void onAssetInteraction(String id){
-
-    }
-
-    public void onAssetInfoInteraction(Uri uri){
-
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-    }
 }

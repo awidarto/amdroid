@@ -26,6 +26,12 @@ public class AssetEvent {
         this.rackId = rackId;
     }
 
+    public AssetEvent(String action, Asset asset , String rackId){
+        this.action = action;
+        this.asset = asset;
+        this.rackId = rackId;
+    }
+
     public String getAction() {
         return action;
     }

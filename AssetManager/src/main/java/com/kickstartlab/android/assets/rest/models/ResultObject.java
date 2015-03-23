@@ -6,6 +6,7 @@ package com.kickstartlab.android.assets.rest.models;
 public class ResultObject {
     String status;
     String timestamp;
+    String message;
 
     public ResultObject() {
     }
@@ -24,5 +25,13 @@ public class ResultObject {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

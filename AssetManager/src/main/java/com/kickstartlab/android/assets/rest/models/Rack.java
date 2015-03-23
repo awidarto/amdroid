@@ -29,6 +29,7 @@ public class Rack extends SugarRecord<Rack>{
     private String pictureBrc1;
     private String pictureBrc2;
     private String pictureBrc3;
+    private Integer deleted;
 
     public Rack(){
 
