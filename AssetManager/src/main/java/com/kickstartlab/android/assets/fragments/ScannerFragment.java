@@ -36,6 +36,7 @@ import com.kickstartlab.android.assets.rest.models.Asset;
 import com.kickstartlab.android.assets.rest.models.Location;
 import com.kickstartlab.android.assets.rest.models.OrderItem;
 import com.kickstartlab.android.assets.rest.models.Rack;
+import com.kickstartlab.android.assets.utils.SLog;
 import com.orm.query.Condition;
 import com.orm.query.Select;
 
@@ -219,14 +220,15 @@ public class ScannerFragment extends Fragment implements
                     .limit("1");
             if (select.count() > 0) {
                 Location loc = (Location) select.first();
+                SLog.s(scresult, "checked", "location", loc.getExtId());
                 EventBus.getDefault().post(new LocationEvent("select", loc));
             }else{
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
                         .toString();
-
-                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_location_title),message );
+                SLog.e( scresult, "unregistered", "location" );
+                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_location_title), message, "location");
             }
 
         }else if("rack".equalsIgnoreCase(mParam2)){
@@ -234,14 +236,15 @@ public class ScannerFragment extends Fragment implements
                     .limit("1");
             if (select.count() > 0) {
                 Rack rack = (Rack) select.first();
+                SLog.s(scresult, "checked", "rack", rack.getExtId());
                 EventBus.getDefault().post(new RackEvent("select", rack));
             }else{
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
                         .toString();
-
-                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_rack_title),message );
+                SLog.e( scresult, "unregistered", "rack" );
+                showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_rack_title),message, "rack" );
             }
 
         }else if("asset".equalsIgnoreCase(mParam2)){
@@ -250,16 +253,15 @@ public class ScannerFragment extends Fragment implements
 
             if (select.count() > 0) {
                 Asset asset = (Asset) select.first();
-
-                Log.i("CURRENT RACK ID", mParam1);
-                Log.i("ASSET RACK ID", asset.getRackId());
+                SLog.s(scresult, "checked", "asset", asset.getExtId());
 
                 if( !mParam1.equalsIgnoreCase(asset.getRackId()) ){
                     String message = new StringBuilder(getResources().getString(R.string.misplaced_rack))
                             .append(System.lineSeparator())
                             .append(getResources().getString(R.string.ask_move))
                             .toString();
-                    showDisplacedDialog( message, asset, mParam1);
+                    SLog.s(scresult, "displacement", "asset", "asset " + asset.getExtId() + " in rack " + asset.getRackId()  );
+                    showDisplacedDialog(message, asset, mParam1);
                 }else{
                     EventBus.getDefault().post(new AssetEvent("select", asset));
                 }
@@ -269,8 +271,8 @@ public class ScannerFragment extends Fragment implements
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
                         .toString();
-
-                showAlienDialog( getResources().getString(R.string.dialog_alien_asset_title) ,message );
+                SLog.e(scresult, "alien", "asset");
+                showAlienDialog(getResources().getString(R.string.dialog_alien_asset_title), message);
             }
 
         }else if("getcode".equalsIgnoreCase(mParam2)){
@@ -283,8 +285,10 @@ public class ScannerFragment extends Fragment implements
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
                         .toString();
+                SLog.s(scresult, "asset code exists", "asset", asset.getExtId());
                 showDupeDialog(message);
             }else{
+                SLog.e(scresult, "new asset code", "asset");
                 EventBus.getDefault().post( new ScannerEvent("sendCode", rawResult ));
             }
 
@@ -321,11 +325,13 @@ public class ScannerFragment extends Fragment implements
                               @Override
                               public void onPositive(MaterialDialog dialog) {
                                   //super.onPositive(dialog);
+                                  SLog.e("OK","asset duplicate","asset");
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                               }
 
                               @Override
                               public void onNegative(MaterialDialog dialog) {
+                                  SLog.e("Ignore","asset duplicate","asset");
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                                   super.onNegative(dialog);
                               }
@@ -348,6 +354,7 @@ public class ScannerFragment extends Fragment implements
                 .title(title)
                 .content(message)
                 .neutralText(R.string.action_create_asset)
+                .neutralColor(R.color.green)
                 .positiveText(R.string.ok_button)
                 .positiveColor(R.color.green)
                 .negativeText(R.string.cancel_button)
@@ -356,17 +363,21 @@ public class ScannerFragment extends Fragment implements
                               @Override
                               public void onPositive(MaterialDialog dialog) {
                                   //super.onPositive(dialog);
+                                  SLog.e("OK","alien asset","asset");
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                               }
 
                               @Override
                               public void onNegative(MaterialDialog dialog) {
+                                  SLog.e("Cancel","alien asset","asset");
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                                   super.onNegative(dialog);
                               }
 
                               @Override
                               public void onNeutral(MaterialDialog dialog) {
+                                  SLog.e("Create","alien asset","asset");
+                                  EventBus.getDefault().post(new AssetEvent("createAsset"));
                                   super.onNeutral(dialog);
                               }
                           }
@@ -378,10 +389,13 @@ public class ScannerFragment extends Fragment implements
         //fragment.show(getActivity().getSupportFragmentManager(), "alien_results");
     }
 
-    public void showUnregisteredDialog(String title, String message) {
+    public void showUnregisteredDialog(String title, String message, final String mode) {
+
         new MaterialDialog.Builder(getActivity())
                 .title(title)
                 .content(message)
+                .neutralText(R.string.action_create_asset)
+                .neutralColor(R.color.green)
                 .positiveText(R.string.ok_button)
                 .positiveColor(R.color.green)
                 .negativeText(R.string.cancel_button)
@@ -390,17 +404,23 @@ public class ScannerFragment extends Fragment implements
                               @Override
                               public void onPositive(MaterialDialog dialog) {
                                   //super.onPositive(dialog);
+                                  SLog.e("Create","unregistered " + mode,mode);
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                               }
 
                               @Override
                               public void onNegative(MaterialDialog dialog) {
+                                  SLog.e("Cancel","unregistered " + mode,mode);
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                                   super.onNegative(dialog);
                               }
 
                               @Override
                               public void onNeutral(MaterialDialog dialog) {
+                                  if ("rack".equalsIgnoreCase(mode)) {
+                                      SLog.e("Create","unregistered " + mode,mode);
+                                      EventBus.getDefault().post(new RackEvent("createRack"));
+                                  }
                                   super.onNeutral(dialog);
                               }
                           }
@@ -426,12 +446,14 @@ public class ScannerFragment extends Fragment implements
                                   //super.onPositive(dialog);
                                     Log.i("CURRENT RACK", rackId);
                                     Log.i("ASSET RACK", asset.getRackId());
+                                  SLog.s("Move", "displacement", "asset", "asset " + asset.getExtId() + " to rack " + rackId  );
                                   EventBus.getDefault().post(new AssetEvent("moveRack", asset, rackId ));
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                               }
 
                               @Override
                               public void onNegative(MaterialDialog dialog) {
+                                  SLog.s("Ignore", "displacement", "asset", "asset " + asset.getExtId() + " to rack " + rackId  );
                                   EventBus.getDefault().post(new ScannerEvent("resume"));
                                   super.onNegative(dialog);
                               }

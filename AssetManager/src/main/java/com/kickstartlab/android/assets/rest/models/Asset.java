@@ -42,12 +42,48 @@ public class Asset extends SugarRecord<Asset> {
     private String pictureBrc2;
     private String pictureBrc3;
 
+    private Integer powerStatus;
+    private Integer labelStatus;
+    private Integer virtualStatus;
+
     private Integer localEdit;
     private Integer uploaded;
     private Integer deleted;
 
     public Asset(){
 
+    }
+
+    public Integer getPowerStatus() {
+        return powerStatus;
+    }
+
+    public void setPowerStatus(Integer powerStatus) {
+        this.powerStatus = powerStatus;
+    }
+
+    public Integer getLabelStatus() {
+        return labelStatus;
+    }
+
+    public void setLabelStatus(Integer labelStatus) {
+        this.labelStatus = labelStatus;
+    }
+
+    public Integer getVirtualStatus() {
+        return virtualStatus;
+    }
+
+    public void setVirtualStatus(Integer virtualStatus) {
+        this.virtualStatus = virtualStatus;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
     }
 
     public Integer getLocalEdit() {

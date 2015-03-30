@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.TextView;
 
 import com.kickstartlab.android.assets.R;
 import com.kickstartlab.android.assets.events.ScannerEvent;
@@ -28,6 +29,8 @@ public class ScannerActivity extends ActionBarActivity {
 
     SmoothProgressBar mProgressBar;
 
+    TextView mProgressIndicator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,12 +38,14 @@ public class ScannerActivity extends ActionBarActivity {
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mProgressBar = (SmoothProgressBar) findViewById(R.id.loadProgressBar);
+        mProgressIndicator = (TextView) findViewById(R.id.progressMessage);
 
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
         }
 
         mProgressBar.setVisibility(View.GONE);
+        mProgressIndicator.setVisibility(View.GONE);
 
         EventBus.getDefault().register(this);
 

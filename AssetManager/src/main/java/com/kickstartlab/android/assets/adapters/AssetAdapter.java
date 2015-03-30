@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -72,7 +73,13 @@ public class AssetAdapter extends BaseAdapter {
         holder.head.setText(list.get(i).getSKU());
         holder.subhead.setText(list.get(i).getItemDescription() );
 
-        String iconText = list.get(i).getSKU().substring(0,1);
+        String iconText;
+        if(list.get(i).getSKU().length() > 0){
+            iconText = list.get(i).getSKU().substring(0,1);
+        }else{
+            iconText = "-";
+        }
+
         TextDrawable icon = TextDrawable.builder()
                 .beginConfig()
                 .width(50)  // width in px

@@ -12,10 +12,15 @@
     <item type="id" name="action_refresh_location" />
     <item type="id" name="action_refresh_rack" />
     <item type="id" name="action_refresh_asset" />
+    <item type="id" name="action_refresh_asset_detail" />
     <item type="id" name="action_location" />
     <item type="id" name="action_rack" />
     <item type="id" name="action_asset" />
     <item type="id" name="action_edit_asset" />
     <item type="id" name="action_delete_asset" />
+    <item name="label_yes" type="id">Yes</item>
+    <item name="action_edit_rack" type="id">Edit Rack</item>
+    <item name="action_refresh_rack_detail" type="id">Refresh Rack</item>
+    <item name="action_rack_detail" type="id" />
 
 </resources>

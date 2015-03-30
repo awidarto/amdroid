@@ -18,6 +18,21 @@
             android:summary="@string/pref_title_upsync_images"
             android:key="upsync_images"
             />
+        <com.jenzz.materialpreference.Preference
+            android:title="@string/pref_header_upsync_assets"
+            android:summary="@string/pref_title_upsync_assets"
+            android:key="upsync_assets"
+            />
+        <com.jenzz.materialpreference.Preference
+            android:title="@string/pref_header_upsync_log"
+            android:summary="@string/pref_title_upsync_log"
+            android:key="sync_log"
+            />
+        <com.jenzz.materialpreference.Preference
+            android:title="@string/pref_header_purge_log"
+            android:summary="@string/pref_title_purge_log"
+            android:key="purge_log"
+            />
     </com.jenzz.materialpreference.PreferenceCategory>
 
 

@@ -19,6 +19,10 @@ public class ImageEvent {
         this.entityType = entityType;
     }
 
+    public ImageEvent(String action){
+        this.action = action;
+    }
+
     public String getAction() {
         return action;
     }

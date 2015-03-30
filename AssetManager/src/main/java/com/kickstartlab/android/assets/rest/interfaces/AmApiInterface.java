@@ -7,6 +7,7 @@ import com.kickstartlab.android.assets.rest.models.Location;
 import com.kickstartlab.android.assets.rest.models.MemberData;
 import com.kickstartlab.android.assets.rest.models.Rack;
 import com.kickstartlab.android.assets.rest.models.ResultObject;
+import com.kickstartlab.android.assets.rest.models.ScanLog;
 
 import java.util.List;
 
@@ -39,29 +40,45 @@ public interface AmApiInterface {
     );
 
     @GET("/location")
-    public void getLocation(Callback<List<Location>> response);
+    public void getLocation(@Query("key") String key, Callback<List<Location>> response);
 
     @GET(("/rack"))
-    public void getRack(Callback<List<Rack>> response);
+    public void getRack(@Query("key") String key, Callback<List<Rack>> response);
+
+    @POST("/rack")
+    public void sendRack(@Query("key") String key,  @Body Rack rack, Callback<ResultObject> result );
+
+    @PUT("/rack/{id}")
+    public void updateRack(@Query("key") String key,  @Path("id") String id ,@Body Rack rack, Callback<ResultObject> result );
+
+    @PUT("/sync/racks")
+    public void updateRackBatch( @Query("key") String key, @Query("batch") Integer batch, @Body List<Rack> racks, Callback<ResultObject> result );
 
     @GET("/asset")
-    public void getAsset(Callback<List<Asset>> response);
+    public void getAsset(@Query("key") String key, Callback<List<Asset>> response);
 
     @GET("/assettype")
-    public void getAssetType(Callback<List<DeviceType>> response);
+    public void getAssetType(@Query("key") String key, Callback<List<DeviceType>> response);
 
     @POST("/asset")
-    public void sendAsset( @Body Asset asset, Callback<ResultObject> result );
+    public void sendAsset(@Query("key") String key,  @Body Asset asset, Callback<ResultObject> result );
 
     @PUT("/asset/{id}")
-    public void updateAsset( @Path("id") String id ,@Body Asset asset, Callback<ResultObject> result );
+    public void updateAsset(@Query("key") String key,  @Path("id") String id ,@Body Asset asset, Callback<ResultObject> result );
+
+    @PUT("/sync/assets")
+    public void updateAssetBatch( @Query("key") String key, @Query("batch") Integer batch, @Body List<Asset> assets, Callback<ResultObject> result );
+
+    @POST("/sync/scanlog")
+    public void sendScanlogBatch( @Query("key") String key, @Query("batch") Integer batch, @Body List<ScanLog> logs, Callback<List<ResultObject>> result );
 
     @GET("/img")
-    public void getImage( @Query("id") String id, @Query("cls") String cls ,Callback<List<AssetImages>> response);
+    public void getImage( @Query("key") String key,  @Query("id") String id, @Query("cls") String cls ,Callback<List<AssetImages>> response);
 
     @Multipart
     @POST("/upload")
     public void uploadImage(
+        @Query("key") String key,
         @Query("ns") String ns,
         @Query("parid") String parent_id,
         @Query("parclass") String parent_class,

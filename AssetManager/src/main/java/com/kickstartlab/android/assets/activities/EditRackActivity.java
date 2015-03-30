@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -21,11 +21,12 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.kickstartlab.android.assets.R;
 import com.kickstartlab.android.assets.events.AssetEvent;
 import com.kickstartlab.android.assets.events.ImageEvent;
+import com.kickstartlab.android.assets.events.RackEvent;
 import com.kickstartlab.android.assets.rest.models.Asset;
 import com.kickstartlab.android.assets.rest.models.AssetImages;
 import com.kickstartlab.android.assets.rest.models.DeviceType;
+import com.kickstartlab.android.assets.rest.models.Rack;
 import com.kickstartlab.android.assets.ui.LabeledSwitchView;
-import com.kickstartlab.android.assets.ui.LabeledTextView;
 import com.kickstartlab.android.assets.ui.SquareImageView;
 import com.kickstartlab.android.assets.utils.DbDateUtil;
 import com.kickstartlab.android.assets.utils.RandomStringGenerator;
@@ -40,7 +41,7 @@ import de.greenrobot.event.EventBus;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import nl.changer.polypicker.ImagePickerActivity;
 
-public class EditAssetActivity extends ActionBarActivity {
+public class EditRackActivity extends ActionBarActivity {
 
     Toolbar mToolbar;
     SmoothProgressBar mProgressBar;
@@ -49,15 +50,15 @@ public class EditAssetActivity extends ActionBarActivity {
     private static final int INTENT_REQUEST_GET_CODE = 4554;
     private int INTENT_REQUEST_GET_IMAGES = 1667;
 
-    MaterialEditText sku,desc,ip,host,os,pic,pic_email,pic_phone,contract,owner;
+    MaterialEditText sku,desc;
 
     Spinner asset_type;
 
-    LabeledSwitchView powerStatus, virtualStatus, labelStatus;
+    LabeledSwitchView rackStatus;
 
-    String ext_id;
+    String ext_id, yes, no;
 
-    Asset asset;
+    Rack rack;
 
     LinearLayout image_container;
 
@@ -92,17 +93,15 @@ public class EditAssetActivity extends ActionBarActivity {
         }else{
             ext_id = extra.getString("ext_id");
 
-            Select select = Select.from(Asset.class).where(Condition.prop("ext_id").eq(ext_id))
+            Select select = Select.from(Rack.class).where(Condition.prop("ext_id").eq(ext_id))
                     .limit("1");
-
-            Log.i("EDIT ASSET COUNT", String.valueOf(select.count()));
 
 
             if (select.count() > 0) {
-                asset = (Asset) select.first();
-                Log.i("EDIT ASSET SKU", asset.getSKU() ) ;
+                rack = (Rack) select.first();
+                //Log.i("EDIT ASSET SKU", rack.getSKU() ) ;
 
-                this.getSupportActionBar().setTitle("Edit " + asset.getSKU());
+                this.getSupportActionBar().setTitle("Edit " + rack.getSKU());
 
                 this.getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -110,104 +109,25 @@ public class EditAssetActivity extends ActionBarActivity {
 
                 image_container = (LinearLayout) findViewById(R.id.image_container);
 
-                sku = makeEditText(this,"Serial Number / Asset Code");
+                sku = makeEditText(this,"Serial Number / Rack Code");
                 desc = makeEditText(this,"Description");
-                ip = makeEditText(this, "IP Address");
-                host = makeEditText(this, "Host");
-                os = makeEditText(this, "OS");
-                pic = makeEditText(this, "PIC");
-                pic_email = makeEditText(this, "PIC Email");
-                pic_phone = makeEditText(this, "PIC Phone");
-                contract = makeEditText(this, "Contract Number");
-                //asset_type = makeEditText(this,"Asset Type");
-                owner = makeEditText(this,"Owner");
-                //MaterialEditText type = makeEditText(this,"Type");
 
-                sku.setText(asset.getSKU());
-                desc.setText(asset.getItemDescription());
-                ip.setText(asset.getIP());
-                host.setText(asset.getHostName());
-                os.setText(asset.getOS());
-                pic.setText(asset.getPIC());
-                pic_email.setText(asset.getPicEmail());
-                pic_phone.setText(asset.getPicPhone());
-                contract.setText(asset.getContractNumber());
-                //asset_type.setText(asset.getAssetType());
-                owner.setText(asset.getOwner());
-                //type.setText(asset.getType());
+                sku.setText(rack.getSKU());
+                desc.setText(rack.getItemDescription());
 
-                asset_type = new Spinner(this);
+                yes = getResources().getString(R.string.label_active);
+                no = getResources().getString(R.string.label_inactive);
 
+                rackStatus = makeSwitch(this, getResources().getString(R.string.rack_status) , 0, yes, no );
 
-                List<DeviceType> types = Select.from(DeviceType.class)
-                        .orderBy("type collate nocase").list();
-
-                TextView asset_type_label = new TextView(this);
-                asset_type_label.setTextColor(R.color.primary_dark);
-                asset_type_label.setTextSize(11);
-                asset_type_label.setText("Asset Type");
-
-                ArrayAdapter<DeviceType> typeAdapter = new ArrayAdapter<DeviceType>(this,android.R.layout.simple_spinner_dropdown_item, types );
-
-                asset_type.setAdapter(typeAdapter);
-
-                if(!asset.getAssetType().equals(null)) {
-
-                    int spinnerPosition = 0;
-
-                    for(int p = 0; p < typeAdapter.getCount();p++){
-                        if(typeAdapter.getItem(p).toString().equalsIgnoreCase(asset.getAssetType())){
-                            spinnerPosition = p;
-                        }
-                    }
-
-                    asset_type.setSelection(spinnerPosition);
-                    spinnerPosition = 0;
-                }
-
-                String yes = getResources().getString(R.string.label_yes);
-                String no = getResources().getString(R.string.label_no);
-
-                powerStatus = makeSwitch(this, getResources().getString(R.string.power_status) , 0, yes, no );
-                labelStatus = makeSwitch(this, getResources().getString(R.string.label_status), 0, yes, no);
-                virtualStatus = makeSwitch(this, getResources().getString(R.string.virtual_status), 0, yes, no);
-
-                if(asset.getPowerStatus() == null || asset.getPowerStatus() == 0){
-                    powerStatus.setChecked(false);
+                if(rack.getStatus() == null || no.equalsIgnoreCase(rack.getStatus())){
+                    rackStatus.setChecked(false);
                 }else{
-                    powerStatus.setChecked(true);
-                }
-
-                if(asset.getLabelStatus() == null || asset.getLabelStatus() == 0){
-                    labelStatus.setChecked(false);
-                }else{
-                    labelStatus.setChecked(true);
-                }
-
-                if(asset.getVirtualStatus() == null || asset.getVirtualStatus() == 0){
-                    virtualStatus.setChecked(false);
-                }else{
-                    virtualStatus.setChecked(true);
+                    rackStatus.setChecked(true);
                 }
 
                 detail_container.addView(sku);
-                detail_container.addView(ip);
-                detail_container.addView(host);
-                detail_container.addView(os);
-                detail_container.addView(contract);
-                detail_container.addView(owner);
-                detail_container.addView(pic);
-                detail_container.addView(pic_email);
-                detail_container.addView(pic_phone);
-
-                detail_container.addView(asset_type_label);
-                detail_container.addView(asset_type);
-
-                detail_container.addView(powerStatus);
-                detail_container.addView(labelStatus);
-                detail_container.addView(virtualStatus);
-
-                //detail_container.addView(type);
+                detail_container.addView(rackStatus);
                 detail_container.addView(desc);
 
                 FloatingActionButton fabSave = (FloatingActionButton) findViewById(R.id.fab_save_item);
@@ -215,32 +135,8 @@ public class EditAssetActivity extends ActionBarActivity {
                 fabSave.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        saveAsset();
-                        Log.i("ASSET EXT ID",asset.getExtId());
-                        /*
-                        String lastUpdate = DbDateUtil.getDateTime();
-
-                        asset.setLastUpdate(lastUpdate);
-                        asset.setSKU(sku.getText().toString());
-                        asset.setIP(ip.getText().toString());
-                        asset.setHostName(host.getText().toString());
-                        asset.setOS(os.getText().toString());
-                        asset.setContractNumber(contract.getText().toString());
-                        asset.setOwner(owner.getText().toString());
-                        asset.setPIC(pic.getText().toString());
-                        asset.setPicEmail(pic_email.getText().toString());
-                        asset.setPicPhone(pic_phone.getText().toString());
-                        asset.setAssetType(asset_type.getSelectedItem().toString());
-                        asset.setItemDescription(desc.getText().toString());
-
-                        asset.setLocalEdit(1);
-                        asset.setUploaded(0);
-
-                        asset.save();
-                        Log.i("asset",asset.getIP());
-                        EventBus.getDefault().post(new AssetEvent("refreshDetail",asset));
-                        finish();
-                        */
+                        saveRack();
+                        //Log.i("ASSET EXT ID",rack.getExtId());
                     }
                 });
 
@@ -271,35 +167,23 @@ public class EditAssetActivity extends ActionBarActivity {
 
     }
 
-    public void saveAsset(){
-        Log.i("ASSET EXT ID",asset.getExtId());
+    public void saveRack(){
 
         String lastUpdate = DbDateUtil.getDateTime();
 
-        asset.setLastUpdate(lastUpdate);
-        asset.setSKU(sku.getText().toString());
-        asset.setIP(ip.getText().toString());
-        asset.setHostName(host.getText().toString());
-        asset.setOS(os.getText().toString());
-        asset.setContractNumber(contract.getText().toString());
-        asset.setOwner(owner.getText().toString());
-        asset.setPIC(pic.getText().toString());
-        asset.setPicEmail(pic_email.getText().toString());
-        asset.setPicPhone(pic_phone.getText().toString());
-        asset.setAssetType(asset_type.getSelectedItem().toString());
-        asset.setItemDescription(desc.getText().toString());
+        rack.setLastUpdate(lastUpdate);
+        rack.setSKU(sku.getText().toString());
+        rack.setItemDescription(desc.getText().toString());
 
-        asset.setPowerStatus( (powerStatus.isChecked())?1:0 );
-        asset.setLabelStatus( (labelStatus.isChecked())?1:0 );
-        asset.setVirtualStatus( (virtualStatus.isChecked())?1:0 );
+        rack.setStatus((rackStatus.isChecked()) ? yes : no);
 
-        asset.setLocalEdit(1);
-        asset.setUploaded(0);
+        rack.setLocalEdit(1);
+        rack.setUploaded(0);
 
-        asset.save();
-        Log.i("asset", asset.getIP());
-        EventBus.getDefault().post(new AssetEvent("upsyncAsset",asset));
-        EventBus.getDefault().postSticky(new AssetEvent("refreshDetailView", asset));
+        rack.save();
+
+        EventBus.getDefault().post(new RackEvent("upsyncRack",rack));
+        EventBus.getDefault().postSticky(new RackEvent("refreshDetailView", rack));
         finish();
     }
 
@@ -323,7 +207,7 @@ public class EditAssetActivity extends ActionBarActivity {
         }
 
         if(id == R.id.action_save_asset){
-            saveAsset();
+            saveRack();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -350,7 +234,8 @@ public class EditAssetActivity extends ActionBarActivity {
                 if(uris != null) {
                     for(Uri uri : uris){
                         Select select = Select.from(AssetImages.class)
-                                .where(Condition.prop("uri").eq(uri.toString()))
+                                .where(Condition.prop("uri").eq(uri.toString()),
+                                        Condition.prop("parent_class").eq("rack"))
                                 .limit("1");
 
                         if(select.count() > 0){
@@ -361,8 +246,8 @@ public class EditAssetActivity extends ActionBarActivity {
                             String file_id = RandomStringGenerator.generateRandomString(15, RandomStringGenerator.Mode.HEX).toLowerCase();
                             String upload_id = RandomStringGenerator.generateRandomString(24, RandomStringGenerator.Mode.HEX).toLowerCase();
 
-                            aim.setNs("assetpic");
-                            aim.setParentClass("asset");
+                            aim.setNs("rackpic");
+                            aim.setParentClass("rack");
                             aim.setParentId(ext_id);
                             aim.setFileId(file_id);
                             aim.setExtId(upload_id);
@@ -396,15 +281,15 @@ public class EditAssetActivity extends ActionBarActivity {
     public void refreshImage(){
         image_container.removeAllViews();
 
-        Log.i("IMAGE","REFRESH");
+        //Log.i("IMAGE","REFRESH");
 
         //Select select = Select.from(AssetImages.class).where(Condition.prop("ext_id").eq(ext_id));
 
         Select select = Select.from(AssetImages.class).where(Condition.prop("parent_id").eq(ext_id),
-                Condition.prop("parent_class").eq("asset"),
+                Condition.prop("parent_class").eq("rack"),
                 Condition.prop("deleted").eq(0));
 
-        Log.i( "IMG", String.valueOf(select.count()) );
+        //Log.i( "IMG", String.valueOf(select.count()) );
 
         if(select.count() > 0){
 
@@ -486,7 +371,7 @@ public class EditAssetActivity extends ActionBarActivity {
             defpic.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i("IMAGE CLICK", file_id);
+                    //Log.i("IMAGE CLICK", file_id);
                     EventBus.getDefault().post(new ImageEvent("upload", file_id , "asset"));
                 }
             });

@@ -1,6 +1,7 @@
 package com.kickstartlab.android.assets.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,8 @@ import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.kickstartlab.android.assets.R;
+import com.kickstartlab.android.assets.activities.AddAssetActivity;
+import com.kickstartlab.android.assets.activities.AddRackActivity;
 import com.kickstartlab.android.assets.adapters.LocationAdapter;
 import com.kickstartlab.android.assets.adapters.RackAdapter;
 import com.kickstartlab.android.assets.events.LocationEvent;
@@ -70,6 +73,7 @@ public class RackListFragment extends Fragment implements AbsListView.OnItemClic
 
     SearchView mSearchView;
 
+    FloatingActionButton mFabScan, mFabAddRack;
 
     // TODO: Rename and change types of parameters
     public static RackListFragment newInstance(String param1, String param2) {
@@ -120,11 +124,23 @@ public class RackListFragment extends Fragment implements AbsListView.OnItemClic
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
-        FloatingActionButton mFabScan = (FloatingActionButton) view.findViewById(R.id.fab_rack);
+        mFabScan = (FloatingActionButton) view.findViewById(R.id.fab_scan_rack);
         mFabScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EventBus.getDefault().post(new ScannerEvent("scan", "rack" ));
+            }
+        });
+
+        mFabAddRack = (FloatingActionButton) view.findViewById(R.id.fab_add_rack);
+
+        mFabAddRack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getActivity(), AddRackActivity.class);
+                i.putExtra("locationId",mParam1);
+                i.putExtra("locationName",mParam2);
+                startActivity(i);
             }
         });
 

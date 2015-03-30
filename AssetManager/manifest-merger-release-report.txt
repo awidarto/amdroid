@@ -165,20 +165,40 @@ ADDED from AndroidManifest.xml:62:9
 		ADDED from AndroidManifest.xml:65:13
 	android:name
 		ADDED from AndroidManifest.xml:63:13
-activity#nl.changer.polypicker.ImagePickerActivity
+activity#com.kickstartlab.android.assets.activities.AddRackActivity
 ADDED from AndroidManifest.xml:71:9
-	android:theme
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:75:13
+	android:label
 		ADDED from AndroidManifest.xml:73:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:74:13
 	android:name
 		ADDED from AndroidManifest.xml:72:13
-activity#com.kickstartlab.android.assets.activities.ScannerActivity
-ADDED from AndroidManifest.xml:74:9
+activity#com.kickstartlab.android.assets.activities.EditRackActivity
+ADDED from AndroidManifest.xml:80:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:84:13
 	android:label
-		ADDED from AndroidManifest.xml:76:13
+		ADDED from AndroidManifest.xml:82:13
 	android:parentActivityName
-		ADDED from AndroidManifest.xml:77:13
+		ADDED from AndroidManifest.xml:83:13
 	android:name
-		ADDED from AndroidManifest.xml:75:13
+		ADDED from AndroidManifest.xml:81:13
+activity#nl.changer.polypicker.ImagePickerActivity
+ADDED from AndroidManifest.xml:89:9
+	android:theme
+		ADDED from AndroidManifest.xml:91:13
+	android:name
+		ADDED from AndroidManifest.xml:90:13
+activity#com.kickstartlab.android.assets.activities.ScannerActivity
+ADDED from AndroidManifest.xml:92:9
+	android:label
+		ADDED from AndroidManifest.xml:94:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:95:13
+	android:name
+		ADDED from AndroidManifest.xml:93:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:support-v4:22.0.0:20:5

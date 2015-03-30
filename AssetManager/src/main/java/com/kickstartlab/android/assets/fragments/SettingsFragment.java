@@ -10,8 +10,10 @@ import android.view.ViewGroup;
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.jenzz.materialpreference.Preference;
 import com.kickstartlab.android.assets.R;
+import com.kickstartlab.android.assets.events.AssetEvent;
 import com.kickstartlab.android.assets.events.DeviceTypeEvent;
 import com.kickstartlab.android.assets.events.ImageEvent;
+import com.kickstartlab.android.assets.events.LogEvent;
 
 import de.greenrobot.event.EventBus;
 
@@ -65,6 +67,10 @@ public class SettingsFragment extends PreferenceFragment {
         Preference sync = (Preference) findPreference("sync_parameter");
         Preference sync_images = (Preference) findPreference("sync_images");
         Preference upsync_images = (Preference) findPreference("upsync_images");
+        Preference upsync_assets = (Preference) findPreference("upsync_assets");
+        Preference sync_log = (Preference) findPreference("sync_log");
+        Preference purge_log = (Preference) findPreference("purge_log");
+
 
 
         sync.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
@@ -87,6 +93,28 @@ public class SettingsFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceClick(android.preference.Preference preference) {
                 EventBus.getDefault().post(new ImageEvent("upsync","all", "all"));
+                return false;
+            }
+        });
+
+        upsync_assets.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new AssetEvent("upsyncBatch"));
+                return false;
+            }
+        });
+        sync_log.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new LogEvent("syncLog"));
+                return false;
+            }
+        });
+        purge_log.setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(android.preference.Preference preference) {
+                EventBus.getDefault().post(new LogEvent("purgeLog"));
                 return false;
             }
         });

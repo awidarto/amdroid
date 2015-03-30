@@ -77,5 +77,23 @@
     <string name="pref_title_upsync_images">Upload device captured images</string>
     <string name="dialog_unregistered_location_title">Unregistered Location</string>
     <string name="dialog_unregistered_rack_title">Unregistered Rack</string>
+    <string name="power_status">Power Status</string>
+    <string name="label_status">Label Status</string>
+    <string name="virtual_status">Virtual Status</string>
+    <string name="label_no">No</string>
+    <string name="label_yes">Yes</string>
+    <string name="pref_header_upsync_assets">Sync Assets</string>
+    <string name="pref_title_upsync_assets">Synchronize all assets</string>
+    <string name="loading_default">Loading...</string>
+    <string name="uploading_images">Uploading images</string>
+    <string name="rack_status">Status</string>
+    <string name="label_active">Active</string>
+    <string name="label_inactive">Inactive</string>
+    <string name="title_activity_add_rack">Add Rack</string>
+    <string name="acction_rack_detail">Rack Detail</string>
+    <string name="pref_header_upsync_log">Sync Log</string>
+    <string name="pref_title_upsync_log">Synchronize Scan Log</string>
+    <string name="pref_header_purge_log">Clear Log</string>
+    <string name="pref_title_purge_log">Clear log data</string>
 
 </resources>

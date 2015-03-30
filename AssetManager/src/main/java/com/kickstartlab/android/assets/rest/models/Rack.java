@@ -29,6 +29,9 @@ public class Rack extends SugarRecord<Rack>{
     private String pictureBrc1;
     private String pictureBrc2;
     private String pictureBrc3;
+
+    private Integer localEdit;
+    private Integer uploaded;
     private Integer deleted;
 
     public Rack(){
@@ -37,6 +40,30 @@ public class Rack extends SugarRecord<Rack>{
 
     public String toString(){
         return SKU;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    public Integer getLocalEdit() {
+        return localEdit;
+    }
+
+    public void setLocalEdit(Integer localEdit) {
+        this.localEdit = localEdit;
+    }
+
+    public Integer getUploaded() {
+        return uploaded;
+    }
+
+    public void setUploaded(Integer uploaded) {
+        this.uploaded = uploaded;
     }
 
     public String getSKU() {

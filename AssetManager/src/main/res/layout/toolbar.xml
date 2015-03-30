@@ -16,4 +16,15 @@
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:indeterminate="true"/>
+    <TextView
+        android:id="@+id/progressMessage"
+        android:textSize="12sp"
+        android:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/loading_default"
+        android:elegantTextHeight="false"
+        android:height="18dp"
+        android:textStyle="normal"
+        android:gravity="center_vertical|center_horizontal" />
 </merge>

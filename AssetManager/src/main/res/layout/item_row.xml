@@ -42,5 +42,9 @@
             android:layout_marginBottom="4dp" />
 
         </LinearLayout>
-
+    <ImageView
+        android:id="@+id/upsync"
+        android:src="@drawable/ic_launch_grey600_18dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp" />
 </LinearLayout>

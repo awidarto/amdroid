@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,11 +21,13 @@ import android.widget.LinearLayout;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.kickstartlab.android.assets.R;
 import com.kickstartlab.android.assets.activities.EditAssetActivity;
+import com.kickstartlab.android.assets.activities.EditRackActivity;
 import com.kickstartlab.android.assets.events.AssetEvent;
 import com.kickstartlab.android.assets.events.ImageEvent;
-import com.kickstartlab.android.assets.rest.interfaces.AmApiInterface;
+import com.kickstartlab.android.assets.events.RackEvent;
 import com.kickstartlab.android.assets.rest.models.Asset;
 import com.kickstartlab.android.assets.rest.models.AssetImages;
+import com.kickstartlab.android.assets.rest.models.Rack;
 import com.kickstartlab.android.assets.ui.LabeledTextView;
 import com.kickstartlab.android.assets.ui.SquareImageView;
 import com.kickstartlab.android.assets.utils.RandomStringGenerator;
@@ -34,19 +35,17 @@ import com.orm.query.Condition;
 import com.orm.query.Select;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import nl.changer.polypicker.ImagePickerActivity;
-import retrofit.RestAdapter;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link AssetDetailFragment#newInstance} factory method to
+ * A simple {@link android.support.v4.app.Fragment} subclass.
+ * Use the {@link com.kickstartlab.android.assets.fragments.RackDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AssetDetailFragment extends Fragment {
+public class RackDetailFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -58,13 +57,15 @@ public class AssetDetailFragment extends Fragment {
 
     private int INTENT_REQUEST_GET_IMAGES = 1667;
 
-    Asset asset;
+    Rack rack;
+
+    String yes, no;
 
     FloatingActionButton btEdit, btAddImage;
 
-    LabeledTextView sku, desc,ip,os,pic,pic_email,pic_phone,contract,asset_type,owner,type,host;
+    LabeledTextView sku, desc;
 
-    LabeledTextView powerStatus, labelStatus, virtualStatus;
+    LabeledTextView rackStatus;
 
     LinearLayout image_container;
 
@@ -77,8 +78,8 @@ public class AssetDetailFragment extends Fragment {
      * @return A new instance of fragment AssetDetailFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AssetDetailFragment newInstance(String param1, String param2) {
-        AssetDetailFragment fragment = new AssetDetailFragment();
+    public static RackDetailFragment newInstance(String param1, String param2) {
+        RackDetailFragment fragment = new RackDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -86,7 +87,7 @@ public class AssetDetailFragment extends Fragment {
         return fragment;
     }
 
-    public AssetDetailFragment() {
+    public RackDetailFragment() {
         // Required empty public constructor
     }
 
@@ -114,7 +115,7 @@ public class AssetDetailFragment extends Fragment {
         btEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getActivity(), EditAssetActivity.class);
+                Intent i = new Intent(getActivity(), EditRackActivity.class);
                 i.putExtra("ext_id", mParam1);
                 startActivity(i);
             }
@@ -133,100 +134,26 @@ public class AssetDetailFragment extends Fragment {
 
         image_container = (LinearLayout) mview.findViewById(R.id.image_container);
 
-        Select select = Select.from(Asset.class).where(Condition.prop("ext_id").eq(mParam1))
+        Select select = Select.from(Rack.class).where(Condition.prop("ext_id").eq(mParam1))
                 .limit("1");
 
-        Log.i("ASSET COUNT", String.valueOf(select.count()));
+        Log.i("RACK COUNT", String.valueOf(select.count()));
         if (select.count() > 0) {
-            asset = (Asset) select.first();
+            rack = (Rack) select.first();
 
-            Log.i("ASSET SKU", asset.getSKU() ) ;
+            Log.i("RACK SKU", rack.getSKU()) ;
 
-            /*
-                private String IP;
-                private String OS;
-                private String PIC;
-                private String PicEmail;
-                private String PicPhone;
-                private String contractNumber;
-                private String SKU;
-                private String assetType;
-                private String brc1;
-                private String brc2;
-                private String brc3;
-                private String brchead;
-                private String createdDate;
-                private String defaultpic;
-                private String hostName;
-                private String itemDescription;
-                private String lastUpdate;
-                private String locationId;
-                private String owner;
-                private String rackId;
-                private String status;
-                private String tags;
-                private String type;
-                private String updatedAt;
-                private String extId;
-                private String pictureThumbnailUrl;
-                private String pictureLargeUrl;
-                private String pictureMediumUrl;
-                private String pictureFullUrl;
-                private String pictureBrchead;
-                private String pictureBrc1;
-                private String pictureBrc2;
-                private String pictureBrc3;
-            *
-            *
-            * */
+            sku = makeText(getActivity(),"Serial Number / Rack Code",rack.getSKU());
+            desc = makeText(getActivity(),"Description",rack.getItemDescription());
 
-            sku = makeText(getActivity(),"Serial Number / Asset Code",asset.getSKU());
-            desc = makeText(getActivity(),"Description",asset.getItemDescription());
-            ip = makeText(getActivity(),"IP Address",asset.getIP());
-            os = makeText(getActivity(),"OS",asset.getOS());
-            pic = makeText(getActivity(),"PIC",asset.getPIC());
-            pic_email = makeText(getActivity(),"PIC Email",asset.getPicEmail());
-            pic_phone = makeText(getActivity(),"PIC Phone",asset.getPicPhone());
-            contract = makeText(getActivity(),"Contract Number",asset.getContractNumber());
-            asset_type = makeText(getActivity(),"Asset Type",asset.getAssetType());
-            owner = makeText(getActivity(),"Owner",asset.getOwner());
-            type = makeText(getActivity(),"Type",asset.getType());
-            host = makeText(getActivity(),"Host",asset.getHostName());
+            yes = getResources().getString(R.string.label_active);
+            no = getResources().getString(R.string.label_inactive);
 
-            powerStatus = makeText(getActivity(), "Power Status", (asset.getPowerStatus() == 1)?"Yes":"No" );
-            labelStatus = makeText(getActivity(), "Label Status", (asset.getLabelStatus() == 1)?"Yes":"No" );
-            virtualStatus = makeText(getActivity(), "Virtual Status", (asset.getVirtualStatus() == 1)?"Yes":"No" );
+            rackStatus = makeText(getActivity(), "Status", ( "active".equalsIgnoreCase(rack.getStatus())) ? yes : no);
 
             detail_container.addView(sku);
-            detail_container.addView(ip);
-            detail_container.addView(host);
-            detail_container.addView(os);
-            detail_container.addView(contract);
-            detail_container.addView(owner);
-            detail_container.addView(pic);
-            detail_container.addView(pic_email);
-            detail_container.addView(pic_phone);
-            detail_container.addView(asset_type);
-
-            detail_container.addView(powerStatus);
-            detail_container.addView(labelStatus);
-            detail_container.addView(virtualStatus);
-
-            //detail_container.addView(type);
+            detail_container.addView(rackStatus);
             detail_container.addView(desc);
-
-            /*
-            if("".equalsIgnoreCase(asset.getPictureMediumUrl()) == false){
-                SquareImageView defpic = new SquareImageView(getActivity());
-                detail_container.addView(defpic);
-                Picasso.with(getActivity())
-                        .load(asset.getPictureMediumUrl())
-                        .fit()
-                        .centerCrop()
-                        .placeholder(R.drawable.ic_cloud_download_grey600_24dp)
-                        .into(defpic);
-            }
-            */
 
         }
 
@@ -242,66 +169,35 @@ public class AssetDetailFragment extends Fragment {
         super.onResume();
     }
 
-    public void onEvent(ImageEvent im){
-
-        if( im.getAction() == "refreshImageView" ){
-            refreshImage();
-        }
-
-    }
-
-    public void onEvent(AssetEvent ae){
-        if(ae.getAction() == "refreshDetailView"){
-            Asset a = Select.from(Asset.class).where(Condition.prop("ext_id").eq(mParam1))
+    public void onEvent(RackEvent re){
+        if(re.getAction() == "refreshDetailView"){
+            Rack a = Select.from(Rack.class).where(Condition.prop("ext_id").eq(mParam1))
                     .limit("1").first();
 
             sku.setBody(a.getSKU());
             desc.setBody(a.getItemDescription());
-            ip.setBody(a.getIP());
-            os.setBody(a.getOS());
-            pic.setBody(a.getPIC());
-            pic_email.setBody(a.getPicEmail());
-            pic_phone.setBody(a.getPicPhone());
-            contract.setBody(a.getContractNumber());
-            asset_type.setBody(a.getAssetType());
-            owner.setBody(a.getOwner());
-            host.setBody(a.getHostName());
 
-            powerStatus.setBody( (a.getPowerStatus() == 1)?"Yes":"No" );
-            labelStatus.setBody( (a.getLabelStatus() == 1)?"Yes":"No" );
-            virtualStatus.setBody( (a.getVirtualStatus() == 1)?"Yes":"No" );
+            rackStatus.setBody( ( "active".equalsIgnoreCase(a.getStatus()))?yes:no );
 
             refreshImage();
 
-            EventBus.getDefault().post(new ImageEvent("upsync", a.getExtId(), "asset"));
+            EventBus.getDefault().post(new ImageEvent("upsync", a.getExtId(), "rack"));
 
         }
 
-        if(ae.getAction() == "refreshDetail"){
-            Asset a = ae.getAsset();
-            Log.i("asset evt",a.getIP());
+        if(re.getAction() == "refreshDetail"){
+            Rack a = re.getRack();
 
             sku.setBody(a.getSKU());
             desc.setBody(a.getItemDescription());
-            ip.setBody(a.getIP());
-            os.setBody(a.getOS());
-            pic.setBody(a.getPIC());
-            pic_email.setBody(a.getPicEmail());
-            pic_phone.setBody(a.getPicPhone());
-            contract.setBody(a.getContractNumber());
-            asset_type.setBody(a.getAssetType());
-            owner.setBody(a.getOwner());
-            host.setBody(a.getHostName());
 
-            powerStatus.setBody( (a.getPowerStatus() == 1)?"Yes":"No" );
-            labelStatus.setBody( (a.getLabelStatus() == 1)?"Yes":"No" );
-            virtualStatus.setBody( (a.getVirtualStatus() == 1)?"Yes":"No" );
+            rackStatus.setBody( ( "active".equalsIgnoreCase(a.getStatus()))?yes:no );
 
             refreshImage();
         }
 
-        if(ae.getAction() == "editAsset"){
-            Intent i = new Intent(getActivity(), EditAssetActivity.class);
+        if(re.getAction() == "editRack"){
+            Intent i = new Intent(getActivity(), EditRackActivity.class);
             i.putExtra("ext_id", mParam1);
             startActivity(i);
         }
@@ -317,10 +213,10 @@ public class AssetDetailFragment extends Fragment {
             menu.getItem(0).setVisible(false);
         }
 
-        menuItem = menu.add(Menu.NONE, R.id.action_edit_asset, 0, R.string.action_edit_asset).setIcon(R.drawable.ic_mode_edit_white_24dp);
+        menuItem = menu.add(Menu.NONE, R.id.action_edit_rack, 0, R.string.action_edit_asset).setIcon(R.drawable.ic_mode_edit_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        menuItem = menu.add(Menu.NONE, R.id.action_refresh_asset_detail, 0, R.string.action_refresh).setIcon(R.drawable.ic_sync_white_24dp);
+        menuItem = menu.add(Menu.NONE, R.id.action_refresh_rack_detail, 0, R.string.action_refresh).setIcon(R.drawable.ic_sync_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
     }
@@ -329,8 +225,8 @@ public class AssetDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
 
-        if (id == R.id.action_refresh_asset) {
-            EventBus.getDefault().post(new AssetEvent("upsyncAsset",asset));
+        if (id == R.id.action_refresh_rack) {
+            EventBus.getDefault().post(new RackEvent("upsyncRack",rack));
         }
 
         return super.onOptionsItemSelected(item);
@@ -365,8 +261,8 @@ public class AssetDetailFragment extends Fragment {
                             String file_id = RandomStringGenerator.generateRandomString(15, RandomStringGenerator.Mode.HEX).toLowerCase();
                             String upload_id = RandomStringGenerator.generateRandomString(24, RandomStringGenerator.Mode.HEX).toLowerCase();
 
-                            aim.setNs("assetpic");
-                            aim.setParentClass("asset");
+                            aim.setNs("rackpic");
+                            aim.setParentClass("rack");
                             aim.setParentId(mParam1);
                             aim.setFileId(file_id);
                             aim.setExtId(upload_id);
@@ -376,13 +272,10 @@ public class AssetDetailFragment extends Fragment {
                             aim.setDeleted(0);
                             aim.save();
 
-                            Log.i("SAVED IMAGE", aim.getParentId() + " " +  aim.getExtId() + " " + aim.getUri() + " " + aim.getIsLocal() );
-
                         }
 
                     }
 
-                    //EventBus.getDefault().post(new AssetEvent("refreshImage"));
                     refreshImage();
                 }
             }
@@ -395,7 +288,7 @@ public class AssetDetailFragment extends Fragment {
         Log.i("IMAGE","REFRESH " + mParam1);
 
         Select select = Select.from(AssetImages.class).where(Condition.prop("parent_id").eq(mParam1),
-                Condition.prop("parent_class").eq("asset"),
+                Condition.prop("parent_class").eq("rack"),
                 Condition.prop("deleted").eq(0));
 
         Log.i( "IMG COUNT", String.valueOf(select.count()) );
@@ -406,8 +299,6 @@ public class AssetDetailFragment extends Fragment {
 
             for(int im = 0; im < select.count();im++ ){
                 AssetImages am = aim.get(im);
-
-                Log.i("FID", am.getFileId());
 
                 SquareImageView defpic = makeImage(am);
                 image_container.addView(defpic);
@@ -445,7 +336,6 @@ public class AssetDetailFragment extends Fragment {
         SquareImageView defpic = new SquareImageView(getActivity());
         defpic.setPadding(0,8,0,8);
 
-
         if(am.getUploaded() == 0){
             defpic.setAlpha(0.75f);
 
@@ -455,7 +345,7 @@ public class AssetDetailFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Log.i("IMAGE CLICK", file_id);
-                    EventBus.getDefault().post(new ImageEvent("upload", file_id , "asset"));
+                    EventBus.getDefault().post(new ImageEvent("upload", file_id , "rack"));
                 }
             });
         }

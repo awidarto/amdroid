@@ -40,10 +40,12 @@ import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.kickstartlab.android.assets.R;
+import com.kickstartlab.android.assets.events.DeviceTypeEvent;
 import com.kickstartlab.android.assets.rest.interfaces.AmApiInterface;
 import com.kickstartlab.android.assets.rest.models.MemberData;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import de.greenrobot.event.EventBus;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -202,6 +204,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
 
                         MemberData.deleteAll(MemberData.class);
                         memberData.save();
+
+                        //EventBus.getDefault().postSticky(new DeviceTypeEvent("delayedSync"));
 
                         Intent intent;
                         intent = new Intent(LoginActivity.this, MainActivity.class);

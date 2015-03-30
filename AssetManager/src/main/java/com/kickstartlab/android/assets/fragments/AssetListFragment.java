@@ -120,7 +120,7 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
 
         mSearchView.setIconifiedByDefault(false);
 
-        EventBus.getDefault().post(new AssetEvent("refreshById", mParam1));
+        //EventBus.getDefault().post(new AssetEvent("refreshById", mParam1));
         //refreshList();
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -185,6 +185,8 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
         menuItem = menu.add(Menu.NONE, R.id.action_refresh_asset, 0, R.string.action_refresh).setIcon(R.drawable.ic_sync_white_24dp);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
+        menuItem = menu.add(Menu.NONE, R.id.action_rack_detail, 0, R.string.acction_rack_detail).setIcon(R.drawable.ic_info_outline_white_24dp);
+        MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_ALWAYS);
 
     }
 
@@ -267,7 +269,7 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
                 .orderBy("SKU collate nocase").list();
         */
 
-        String ql = "SELECT * FROM ASSET WHERE rack_id = ?  AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY last_update desc, SKU desc";
+        String ql = "SELECT * FROM ASSET WHERE rack_id = ? AND deleted = 0  AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY last_update desc, SKU desc";
         String q = "%" + s + "%";
         String mid = mParam1;
 
@@ -284,7 +286,7 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
 
         //mData = Merchant.listAll(Merchant.class);
         mData =  Select.from(Asset.class)
-                .where(Condition.prop("rack_id").eq(mParam1))
+                .where(Condition.prop("rack_id").eq(mParam1), Condition.prop("deleted").notEq(1) )
                 .orderBy("last_update desc")
                 .orderBy("SKU collate nocase").list();
         /*

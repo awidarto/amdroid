@@ -11,9 +11,14 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.kickstartlab.android.assets.R;
+import com.kickstartlab.android.assets.events.RackEvent;
 import com.kickstartlab.android.assets.rest.models.Rack;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
+import de.greenrobot.event.EventBus;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by awidarto on 12/3/14.
@@ -22,9 +27,11 @@ public class RackAdapter extends BaseAdapter {
 
     LayoutInflater layoutInflater ;
     private List<Rack> list;
+    private Context mContext;
     ColorGenerator generator;
 
     public RackAdapter(Context context) {
+        mContext = context;
         layoutInflater = LayoutInflater.from(context);
         generator = ColorGenerator.MATERIAL;
     }
@@ -53,11 +60,11 @@ public class RackAdapter extends BaseAdapter {
         Holder holder;
 
         if(convertView == null){
-            convertView     = layoutInflater.inflate(R.layout.texthead_item_row, null);
+            convertView     = layoutInflater.inflate(R.layout.item_row, null);
             holder          = new Holder();
             holder.head   = (TextView) convertView.findViewById(R.id.head);
             holder.subhead     = (TextView) convertView.findViewById(R.id.subhead);
-            holder.icon = (ImageView) convertView.findViewById(R.id.avatarpic);
+            holder.avatar = (CircleImageView) convertView.findViewById(R.id.avatarpic);
 
             convertView.setTag(holder);
         }else{
@@ -67,17 +74,45 @@ public class RackAdapter extends BaseAdapter {
         holder.head.setText(list.get(i).getSKU());
         holder.subhead.setText(list.get(i).getItemDescription() );
 
-        String iconText = list.get(i).getSKU().substring(0,1);
-        TextDrawable icon = TextDrawable.builder().buildRound(iconText, generator.getColor(iconText));
+        String iconText;
+        if(list.get(i).getSKU().length() > 0){
+            iconText = list.get(i).getSKU().substring(0,1);
+        }else{
+            iconText = "-";
+        }
+        TextDrawable icon = TextDrawable.builder()
+                .beginConfig()
+                .width(50)  // width in px
+                .height(50) // height in px
+                .endConfig()
+                .buildRound(iconText, generator.getColor(iconText));
 
-        holder.icon.setImageDrawable(icon);
+        if("".equalsIgnoreCase(list.get(i).getPictureMediumUrl() ) == false){
+            Picasso.with(mContext)
+                    .load(list.get(i).getPictureMediumUrl())
+                    .fit()
+                    .centerCrop()
+                    .placeholder(icon)
+                    .into(holder.avatar);
+        }else{
+            holder.avatar.setImageDrawable(icon);
+        }
+
+        final Rack selrack = list.get(i);
+
+        holder.avatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventBus.getDefault().post(new RackEvent("selectDetail", selrack ));
+            }
+        });
 
         return convertView;
     }
 
     static class Holder{
-        ImageView icon;
         TextView head;
         TextView subhead;
+        CircleImageView avatar;
     }
 }

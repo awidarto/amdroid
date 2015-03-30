@@ -9,11 +9,14 @@ public class ScanLog extends SugarRecord<ScanLog>{
 
     private String timestamp;
     private String datetimestamp;
+    private String result;
     private String assetType;
     private String logMessage;
     private String action;
     private String actor;
+    private String actorId;
     private String extId;
+    private String logId;
 
     private Integer uploaded;
 
@@ -26,6 +29,22 @@ public class ScanLog extends SugarRecord<ScanLog>{
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public String getActorId() {
+        return actorId;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 
     public String getTimestamp() {
@@ -82,5 +101,13 @@ public class ScanLog extends SugarRecord<ScanLog>{
 
     public void setActor(String actor) {
         this.actor = actor;
+    }
+
+    public String getLogId() {
+        return logId;
+    }
+
+    public void setLogId(String logId) {
+        this.logId = logId;
     }
 }
