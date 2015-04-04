@@ -230,6 +230,7 @@ public class RackListFragment extends Fragment implements AbsListView.OnItemClic
 
     public void onEvent(RackEvent le){
         if("refresh".equalsIgnoreCase(le.getAction())){
+            Log.i("RACK EVENT","REFRESH LIST");
             refreshList();
         }
     }
@@ -256,7 +257,7 @@ public class RackListFragment extends Fragment implements AbsListView.OnItemClic
 
     public void searchList(String s){
 
-        String ql = "SELECT * FROM RACK WHERE location_id = ?  AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY SKU desc";
+        String ql = "SELECT * FROM RACK WHERE location_id = ? AND deleted != 1 AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY SKU desc";
         String q = "%" + s + "%";
         String mid = mParam1;
 
@@ -273,9 +274,17 @@ public class RackListFragment extends Fragment implements AbsListView.OnItemClic
 
         //mData = Merchant.listAll(Merchant.class);
         mData =  Select.from(Rack.class)
-                .where(Condition.prop("location_id").eq(mParam1))
+                .where(Condition.prop("location_id").eq(mParam1), Condition.prop("deleted").notEq(1) )
                 .orderBy("SKU collate nocase").list();
         /*
+
+        Log.i("LOC ID",mParam1);
+        Log.i("RACK COUNT", String.valueOf(mData.size())  );
+
+        for(int i= 0; i < mData.size();i++){
+            Log.i("RACK ITEM", mData.get(i).toString() + String.valueOf(mData.get(i).getDeleted())  );
+        }
+
         mAdapter = new ArrayAdapter<Location>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mData);
         */

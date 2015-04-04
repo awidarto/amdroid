@@ -230,7 +230,7 @@ public class LocationListFragment extends Fragment implements AbsListView.OnItem
 
         //mData = Merchant.listAll(Merchant.class);
         mData =  Select.from(Location.class)
-                .where( Condition.prop("name").like( "%" + word + "%" ) )
+                .where( Condition.prop("name").like( "%" + word + "%" ), Condition.prop("deleted").eq(0) )
                 .orderBy("name collate nocase").list();
 
         Log.i("SEARCH",word);
@@ -245,7 +245,7 @@ public class LocationListFragment extends Fragment implements AbsListView.OnItem
     public void refreshList(){
 
         //mData = Merchant.listAll(Merchant.class);
-        mData =  Select.from(Location.class).orderBy("name collate nocase").list();
+        mData =  Select.from(Location.class).where(Condition.prop("deleted").eq(0)).orderBy("name collate nocase").list();
         /*
         mAdapter = new ArrayAdapter<Location>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mData);

@@ -269,7 +269,7 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
                 .orderBy("SKU collate nocase").list();
         */
 
-        String ql = "SELECT * FROM ASSET WHERE rack_id = ? AND deleted = 0  AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY last_update desc, SKU desc";
+        String ql = "SELECT * FROM ASSET WHERE rack_id = ? AND deleted != 1  AND ( SKU LIKE ? OR item_description LIKE ? ) ORDER BY last_update desc, SKU desc";
         String q = "%" + s + "%";
         String mid = mParam1;
 
@@ -286,9 +286,19 @@ public class AssetListFragment extends Fragment implements AbsListView.OnItemCli
 
         //mData = Merchant.listAll(Merchant.class);
         mData =  Select.from(Asset.class)
-                .where(Condition.prop("rack_id").eq(mParam1), Condition.prop("deleted").notEq(1) )
+                .where(Condition.prop("rack_id").eq(mParam1),
+                        Condition.prop("deleted").notEq(1) )
                 .orderBy("last_update desc")
                 .orderBy("SKU collate nocase").list();
+
+        Log.i("RACK ID",mParam1);
+        Log.i("ASSET COUNT", String.valueOf(mData.size())  );
+
+        for(int i= 0; i < mData.size();i++){
+            Log.i("ASSET ITEM", mData.get(i).toString() + String.valueOf(mData.get(i).getDeleted())  );
+        }
+
+
         /*
         mAdapter = new ArrayAdapter<Location>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mData);

@@ -763,6 +763,8 @@ public class MainActivity extends ActionBarActivity implements
                         loc.setPhone(lin.getPhone());
                         loc.setTags(lin.getTags());
                         loc.setVenue(lin.getVenue());
+                        loc.setDeleted(lin.getDeleted());
+
                         loc.setPictureThumbnailUrl(lin.getPictureThumbnailUrl());
                         loc.setPictureMediumUrl(lin.getPictureMediumUrl());
                         loc.setPictureLargeUrl(lin.getPictureLargeUrl());
@@ -791,13 +793,14 @@ public class MainActivity extends ActionBarActivity implements
 
     public void refreshRack(String locationId){
         RestAdapter restAdapter = new RestAdapter.Builder()
+                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setEndpoint(getResources().getString(R.string.api_base_url))
                 .build();
         AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
 
         setProgressVisibility(true);
 
-        amApiInterface.getRack( akey, new Callback<List<Rack>>() {
+        amApiInterface.getRack( akey, locationId ,new Callback<List<Rack>>() {
             @Override
             public void success(List<Rack> racks, Response response) {
                 for (int i = 0; i < racks.size(); i++) {
@@ -815,6 +818,7 @@ public class MainActivity extends ActionBarActivity implements
                         rob.setTags(rin.getTags());
                         rob.setLocationName(rin.getLocationName());
                         rob.setStatus(rin.getStatus());
+                        rob.setDeleted(rin.getDeleted());
 
                         rob.setPictureMediumUrl(rin.getPictureMediumUrl());
                         rob.setPictureThumbnailUrl(rin.getPictureThumbnailUrl());
@@ -853,13 +857,16 @@ public class MainActivity extends ActionBarActivity implements
 
     public void refreshAsset(String rackId){
         RestAdapter restAdapter = new RestAdapter.Builder()
+                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setEndpoint(getResources().getString(R.string.api_base_url))
                 .build();
         AmApiInterface amApiInterface = restAdapter.create(AmApiInterface.class);
 
+        Log.i("REFRESH RACK ID ",rackId);
+
         setProgressVisibility(true);
 
-        amApiInterface.getAsset( akey ,new Callback<List<Asset>>() {
+        amApiInterface.getAsset( akey , rackId ,new Callback<List<Asset>>() {
             @Override
             public void success(List<Asset> assets, Response response) {
                 for (int i = 0; i < assets.size(); i++) {

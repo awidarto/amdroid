@@ -33,6 +33,14 @@ public class Location extends SugarRecord<Location>{
 
     }
 
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
     public String toString(){
         return name;
     }

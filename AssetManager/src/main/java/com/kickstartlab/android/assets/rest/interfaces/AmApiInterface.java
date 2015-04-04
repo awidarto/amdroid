@@ -43,7 +43,7 @@ public interface AmApiInterface {
     public void getLocation(@Query("key") String key, Callback<List<Location>> response);
 
     @GET(("/rack"))
-    public void getRack(@Query("key") String key, Callback<List<Rack>> response);
+    public void getRack(@Query("key") String key, @Query("location") String location ,Callback<List<Rack>> response);
 
     @POST("/rack")
     public void sendRack(@Query("key") String key,  @Body Rack rack, Callback<ResultObject> result );
@@ -55,7 +55,7 @@ public interface AmApiInterface {
     public void updateRackBatch( @Query("key") String key, @Query("batch") Integer batch, @Body List<Rack> racks, Callback<ResultObject> result );
 
     @GET("/asset")
-    public void getAsset(@Query("key") String key, Callback<List<Asset>> response);
+    public void getAsset(@Query("key") String key, @Query("rack") String rack ,Callback<List<Asset>> response);
 
     @GET("/assettype")
     public void getAssetType(@Query("key") String key, Callback<List<DeviceType>> response);
