@@ -95,5 +95,9 @@
     <string name="pref_title_upsync_log">Synchronize Scan Log</string>
     <string name="pref_header_purge_log">Clear Log</string>
     <string name="pref_title_purge_log">Clear log data</string>
+    <string name="title_activity_authorize">Authorize</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_authorize">Authorize</string>
+    <string name="label_fullname">Full Name</string>
 
 </resources>

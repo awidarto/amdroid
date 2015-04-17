@@ -97,6 +97,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.kickstartlab.android.assets.activities.MainActivity" />
         </activity>
+        <activity
+            android:name=".activities.AuthorizeActivity"
+            android:label="@string/title_activity_authorize"
+            android:screenOrientation="landscape"
+            android:parentActivityName=".activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kickstartlab.android.assets.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -250,6 +250,11 @@ public class MainActivity extends ActionBarActivity implements
             EventBus.getDefault().post(new RackEvent("selectDetail", r ));
         }
 
+        if(id == R.id.action_authorize){
+            Intent i = new Intent(this, AuthorizeActivity.class);
+            startActivity(i);
+        }
+
         if(id == R.id.action_logout){
             doSignOut();
         }

@@ -1,0 +1,59 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.kickstartlab.android.assets.activities.AuthorizeActivity">
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" >
+        <com.github.gcacace.signaturepad.views.SignaturePad
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/signature_pad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:penColor="@android:color/black"
+            />
+        <TextView
+            android:id="@+id/sign_date"
+            android:layout_width="100dp"
+            android:layout_alignBottom="@+id/full_name"
+            android:text="01/01/2015"
+            android:layout_height="wrap_content" />
+        <com.rengwuxian.materialedittext.MaterialEditText
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            app:floatingLabel="normal"
+            app:floatingLabelText="@string/label_fullname"
+            app:floatingLabelAlwaysShown="false"
+            android:hint="@string/label_fullname"
+            android:id="@+id/full_name"
+            android:layout_alignParentBottom="true"
+            android:linksClickable="false"
+            android:layout_toRightOf="@+id/sign_date"
+            android:layout_toEndOf="@+id/sign_date" />
+        </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:gravity="right"
+        android:layout_height="wrap_content">
+        <com.gc.materialdesign.views.ButtonFlat
+            android:id="@+id/clear_sign"
+            android:text="@string/action_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <com.gc.materialdesign.views.ButtonFlat
+            android:id="@+id/save_sign"
+            android:layout_gravity="right"
+            android:text="@string/action_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </LinearLayout>
+</LinearLayout>
