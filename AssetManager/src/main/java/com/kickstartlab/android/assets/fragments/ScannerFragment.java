@@ -216,13 +216,24 @@ public class ScannerFragment extends Fragment implements
         String scresult = rawResult.getText();
 
         if("location".equalsIgnoreCase(mParam2)){
-            Select select = Select.from(Location.class).where(Condition.prop("ext_id").eq(scresult))
-                    .limit("1");
-            if (select.count() > 0) {
-                Location loc = (Location) select.first();
-                SLog.s(scresult, "checked", "location", loc.getExtId());
-                EventBus.getDefault().post(new LocationEvent("select", loc));
-            }else{
+            try{
+                Select select = Select.from(Location.class).where(Condition.prop("ext_id").eq(scresult))
+                        .limit("1");
+                if (select.count() > 0) {
+                    Location loc = (Location) select.first();
+                    SLog.s(scresult, "checked", "location", loc.getExtId());
+                    EventBus.getDefault().post(new LocationEvent("select", loc));
+                }else{
+                    String message = new StringBuilder("Scan Result : ")
+                            .append(System.lineSeparator())
+                            .append(rawResult.getText())
+                            .toString();
+                    SLog.e( scresult, "unregistered", "location" );
+                    showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_location_title), message, "location");
+                }
+
+            }catch(Exception e){
+                Log.e("location scan exception", e.toString());
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
@@ -232,13 +243,24 @@ public class ScannerFragment extends Fragment implements
             }
 
         }else if("rack".equalsIgnoreCase(mParam2)){
-            Select select = Select.from(Rack.class).where(Condition.prop("SKU").eq(scresult))
-                    .limit("1");
-            if (select.count() > 0) {
-                Rack rack = (Rack) select.first();
-                SLog.s(scresult, "checked", "rack", rack.getExtId());
-                EventBus.getDefault().post(new RackEvent("select", rack));
-            }else{
+            try{
+                Select select = Select.from(Rack.class).where(Condition.prop("SKU").eq(scresult))
+                        .limit("1");
+                if (select.count() > 0) {
+                    Rack rack = (Rack) select.first();
+                    SLog.s(scresult, "checked", "rack", rack.getExtId());
+                    EventBus.getDefault().post(new RackEvent("select", rack));
+                }else{
+                    String message = new StringBuilder("Scan Result : ")
+                            .append(System.lineSeparator())
+                            .append(rawResult.getText())
+                            .toString();
+                    SLog.e( scresult, "unregistered", "rack" );
+                    showUnregisteredDialog(getResources().getString(R.string.dialog_unregistered_rack_title),message, "rack" );
+                }
+
+            }catch (Exception e){
+                Log.e("rack scan exception", e.toString());
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
@@ -251,22 +273,33 @@ public class ScannerFragment extends Fragment implements
             Select select = Select.from(Asset.class).where(Condition.prop("SKU").eq(scresult))
                     .limit("1");
 
-            if (select.count() > 0) {
-                Asset asset = (Asset) select.first();
-                SLog.s(scresult, "checked", "asset", asset.getExtId());
+            try{
+                if (select.count() > 0) {
+                    Asset asset = (Asset) select.first();
+                    SLog.s(scresult, "checked", "asset", asset.getExtId());
 
-                if( !mParam1.equalsIgnoreCase(asset.getRackId()) ){
-                    String message = new StringBuilder(getResources().getString(R.string.misplaced_rack))
-                            .append(System.lineSeparator())
-                            .append(getResources().getString(R.string.ask_move))
-                            .toString();
-                    SLog.s(scresult, "displacement", "asset", "asset " + asset.getExtId() + " in rack " + asset.getRackId()  );
-                    showDisplacedDialog(message, asset, mParam1);
+                    if( !mParam1.equalsIgnoreCase(asset.getRackId()) ){
+                        String message = new StringBuilder(getResources().getString(R.string.misplaced_rack))
+                                .append(System.lineSeparator())
+                                .append(getResources().getString(R.string.ask_move))
+                                .toString();
+                        SLog.s(scresult, "displacement", "asset", "asset " + asset.getExtId() + " in rack " + asset.getRackId()  );
+                        showDisplacedDialog(message, asset, mParam1);
+                    }else{
+                        EventBus.getDefault().post(new AssetEvent("select", asset));
+                    }
+
                 }else{
-                    EventBus.getDefault().post(new AssetEvent("select", asset));
+                    String message = new StringBuilder("Scan Result : ")
+                            .append(System.lineSeparator())
+                            .append(rawResult.getText())
+                            .toString();
+                    SLog.e(scresult, "alien", "asset");
+                    showAlienDialog(getResources().getString(R.string.dialog_alien_asset_title), message);
                 }
 
-            }else{
+            }catch (Exception e){
+                Log.e("asset scan exception", e.toString());
                 String message = new StringBuilder("Scan Result : ")
                         .append(System.lineSeparator())
                         .append(rawResult.getText())
@@ -275,21 +308,27 @@ public class ScannerFragment extends Fragment implements
                 showAlienDialog(getResources().getString(R.string.dialog_alien_asset_title), message);
             }
 
-        }else if("getcode".equalsIgnoreCase(mParam2)){
-            Select select = Select.from(Asset.class).where(Condition.prop("SKU").eq(scresult))
-                    .limit("1");
 
-            if (select.count() > 0) {
-                Asset asset = (Asset) select.first();
-                String message = new StringBuilder("Scan Result : ")
-                        .append(System.lineSeparator())
-                        .append(rawResult.getText())
-                        .toString();
-                SLog.s(scresult, "asset code exists", "asset", asset.getExtId());
-                showDupeDialog(message);
-            }else{
-                SLog.e(scresult, "new asset code", "asset");
-                EventBus.getDefault().post( new ScannerEvent("sendCode", rawResult ));
+        }else if("getcode".equalsIgnoreCase(mParam2)){
+
+            try{
+                Select select = Select.from(Asset.class).where(Condition.prop("SKU").eq(scresult))
+                        .limit("1");
+
+                if (select.count() > 0) {
+                    Asset asset = (Asset) select.first();
+                    String message = new StringBuilder("Scan Result : ")
+                            .append(System.lineSeparator())
+                            .append(rawResult.getText())
+                            .toString();
+                    SLog.s(scresult, "asset code exists", "asset", asset.getExtId());
+                    showDupeDialog(message);
+                }else{
+                    SLog.e(scresult, "new asset code", "asset");
+                    EventBus.getDefault().post( new ScannerEvent("sendCode", rawResult ));
+                }
+            }catch (Exception e){
+                Log.e("getcode scan exception", e.toString());
             }
 
         }
